@@ -169,4 +169,165 @@ const DriverManagement = () => {
                 placeholder={`Buscar driver ${activeTab === 'cao' ? 'CAO' : 'Gestor'}...`}
                 className="w-full pl-9 pr-4 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Contador y etiquetas */}
+        <div className="flex justify-between items-center mb-4 px-1">
+          <div className="text-sm text-gray-600 font-medium">
+            {activeTab === 'cao' ? 'Drivers CAO' : 'Drivers Gestor'}
+            <span className="ml-2 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">
+              {filteredDrivers.length} drivers
+            </span>
+          </div>
+          <div className="flex space-x-2">
+            <span className="inline-flex items-center text-xs bg-green-50 border border-green-200 text-green-700 px-2 py-1 rounded-md">
+              <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>Puerto Local
+            </span>
+            <span className="inline-flex items-center text-xs bg-yellow-50 border border-yellow-200 text-yellow-700 px-2 py-1 rounded-md">
+              <span className="w-2 h-2 bg-yellow-500 rounded-full mr-1"></span>Puerto Remoto
+            </span>
+          </div>
+        </div>
+
+        {/* Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
+          {filteredDrivers.map((driver) => (
+            <div key={driver.id} className="relative">
+              <button
+                onClick={() => toggleDriver(driver.id)}
+                className={`w-full h-20 flex flex-col items-center justify-center rounded-lg shadow-sm border transition-all ${
+                  expandedDriver === driver.id 
+                    ? activeTab === 'cao' ? 'bg-blue-600 text-white border-blue-700' : 'bg-green-600 text-white border-green-700'
+                    : 'bg-white hover:bg-blue-50 border-gray-200'
+                }`}
+              >
+                {/* Ports */}
+                <div className="absolute top-0 left-0 right-0 flex justify-center -mt-2">
+                  {driver.puertoLocal && driver.puertoLocal !== '----' && (
+                    <span className="text-xs font-mono px-1.5 py-0.5 rounded-full mx-0.5 bg-green-100 text-green-700 border border-green-300">
+                      L:{driver.puertoLocal}
+                    </span>
+                  )}
+                  {driver.puertoRemoto && driver.puertoRemoto !== '----' && (
+                    <span className="text-xs font-mono px-1.5 py-0.5 rounded-full mx-0.5 bg-yellow-100 text-yellow-700 border border-yellow-300">
+                      R:{driver.puertoRemoto}
+                    </span>
+                  )}
+                </div>
+
+                {/* Icon */}
+                <div className="mt-1">
+                  <div className={`h-5 w-5 ${expandedDriver === driver.id ? 'text-white' : 'text-blue-500'}`}>
+                    {driver.icon || (driver.subDrivers ? <Server /> : <Database />)}
+                  </div>
+                </div>
+                
+                {/* Name */}
+                <div className="px-1 mt-1 text-center">
+                  <h3 className="text-xs font-medium leading-tight truncate max-w-full">{driver.name}</h3>
+                  <p className={`text-xs mt-0.5 ${expandedDriver === driver.id ? 'text-blue-200' : 'text-gray-500'}`}>
+                    {driver.subDrivers ? `${driver.subDrivers.length} trabajos` : "1 trabajo"}
+                  </p>
+                </div>
+              </button>
+
+              {/* Modal */}
+              {expandedDriver === driver.id && (
+                <>
+                  <div 
+                    className="fixed inset-0 bg-black bg-opacity-50 z-10"
+                    onClick={() => setExpandedDriver(null)}
+                  ></div>
+                  
+                  <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl z-20 w-11/12 max-w-4xl max-h-[80vh] overflow-auto">
+                    <div className={`sticky top-0 ${activeTab === 'cao' ? 'bg-blue-600' : 'bg-green-600'} text-white px-4 py-3 flex justify-between items-center`}>
+                      <div className="flex items-start">
+                        <div className="mr-3 mt-1">
+                          {driver.icon || (driver.subDrivers ? <Server className="h-5 w-5" /> : <Database className="h-5 w-5" />)}
+                        </div>
+                        <div>
+                          <h2 className="text-lg font-bold">{driver.name}</h2>
+                          <p className="text-xs text-blue-100">{driver.subsistema} - {driver.subDrivers ? `${driver.subDrivers.length} trabajos` : "1 trabajo"}</p>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => setExpandedDriver(null)}
+                        className="p-1 rounded-full hover:bg-opacity-20 hover:bg-black transition-colors"
+                      >
+                        <X className="h-5 w-5" />
+                      </button>
+                    </div>
+                    
+                    <div className="px-4 py-2 bg-blue-50 border-b border-blue-100">
+                      <div className="flex flex-wrap gap-2">
+                        <div className="px-3 py-1 bg-white rounded-md border border-blue-200 text-sm">
+                          <span className="text-gray-500 font-medium">Puerto Local:</span> 
+                          <span className="ml-1 font-mono text-blue-700">{driver.puertoLocal || '----'}</span>
+                        </div>
+                        <div className="px-3 py-1 bg-white rounded-md border border-blue-200 text-sm">
+                          <span className="text-gray-500 font-medium">Puerto Remoto:</span> 
+                          <span className="ml-1 font-mono text-blue-700">{driver.puertoRemoto || '----'}</span>
+                        </div>
+                        {driver.ip && (
+                          <div className="px-3 py-1 bg-white rounded-md border border-blue-200 text-sm">
+                            <span className="text-gray-500 font-medium">IP:</span> 
+                            <span className="ml-1 font-mono text-blue-700">{driver.ip}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="p-4">
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead>
+                            <tr>
+                              <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-md">Trabajos</th>
+                              <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tr-md">Subsistema</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {driver.subDrivers ? (
+                              driver.subDrivers.map((subDriver, index) => (
+                                <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                  <td className="px-3 py-2 text-sm text-gray-900 font-mono">{subDriver.trabajos}</td>
+                                  <td className="px-3 py-2 text-sm text-gray-600">{driver.subsistema}</td>
+                                </tr>
+                              ))
+                            ) : (
+                              <tr>
+                                <td className="px-3 py-2 text-sm text-gray-900 font-mono">{driver.trabajos}</td>
+                                <td className="px-3 py-2 text-sm text-gray-600">{driver.subsistema}</td>
+                              </tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* No results */}
+        {filteredDrivers.length === 0 && (
+          <div className="text-center py-8 bg-white rounded-lg shadow-sm">
+            <div className={`inline-flex justify-center items-center w-12 h-12 ${activeTab === 'cao' ? 'bg-blue-100' : 'bg-green-100'} rounded-full mb-4`}>
+              <Search className={`h-6 w-6 ${activeTab === 'cao' ? 'text-blue-600' : 'text-green-600'}`} />
+            </div>
+            <h3 className="text-gray-900 font-medium">No se encontraron resultados</h3>
+            <p className="text-gray-500 mt-1">Prueba con diferentes términos de búsqueda</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default DriverManagement;
