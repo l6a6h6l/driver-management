@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Database, Server, X, Activity, ChevronDown, ChevronUp, Cloud, Layers, Settings, Grid, BarChart, ListFilter } from 'lucide-react';
+import { Search, Database, Server, X, Activity, Cloud, Layers, Settings, Grid, BarChart } from 'lucide-react';
 
 const DriverManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
