@@ -18,7 +18,7 @@ const DriverManagement = () => {
     { id: 8, name: 'DATAFAST DINERS', subsistema: 'CASBS', puertoLocal: '7702', puertoRemoto: '----', ip: '192.168.61.2', subDrivers: [{ trabajos: 'DATDINER' }, { trabajos: 'DATDINERTI' }, { trabajos: 'DATDINER800' }], icon: <Cloud /> },
     { id: 9, name: 'VISA EMISIÓN', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '10100', subDrivers: [{ trabajos: 'VISE' }, { trabajos: 'VISE800' }], icon: <Activity /> },
     { id: 10, name: 'VISA ADQUIRENCIA', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '10101', subDrivers: [{ trabajos: 'VISA' }, { trabajos: 'VISA800' }], icon: <Activity /> },
-    { id: 11, name: 'DCI', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '3083', subDrivers: [{ trabajos: 'DCI' }, { trabajos: 'DCI800' }], icon: <Server /> },
+    { id: 11, name: 'DCI', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '3083', subDrivers: [{ trabajos: 'DCI' }, { trabajos: 'DCICASE1' }, { trabajos: 'DCIINTER1' }, { trabajos: 'DCIREENVIO' }, { trabajos: 'DCI800' }, { trabajos: 'DCIVTXINTE' }], icon: <Server /> },
     { id: 12, name: 'DCI2', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '3083', subDrivers: [{ trabajos: 'DC2' }, { trabajos: 'DC2800' }], icon: <Server /> },
     { id: 13, name: 'MCI', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '6083', subDrivers: [{ trabajos: 'MASTER' }, { trabajos: 'MASTER800' }], icon: <Database /> },
     { id: 14, name: 'MDS', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '6086', subDrivers: [{ trabajos: 'CAOMDS' }, { trabajos: 'CAOMDS800' }], icon: <Database /> },
@@ -33,7 +33,8 @@ const DriverManagement = () => {
     { id: 23, name: 'MÓDULO GRÁFICO', subsistema: 'QINTER', puertoLocal: '52000', puertoRemoto: '----', ip: '----', subDrivers: [{ trabajos: 'LISTEN2550' }, { trabajos: 'LISTEN721' }], icon: <BarChart /> },
     { id: 24, name: 'TRABAJO DE DEPURACIÓN', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '----', ip: 'Op. DEPURCION ARCHIVOS TEMPORALES', subDrivers: [{ trabajos: 'CAODEPURA' }], icon: <Settings /> },
     { id: 25, name: 'BPC-BP', subsistema: 'CASBS', puertoLocal: '7723', puertoRemoto: '----', ip: '10.14.64.11 o 10.14.64.12', subDrivers: [{ trabajos: 'CAOBPC' }, { trabajos: 'CAOBPC800' }], icon: <Settings /> },
-    { id: 26, name: 'JARDIN AZUAYO', subsistema: 'CASBS', puertoLocal: '7765', puertoRemoto: '----', ip: '10.100.2.21', subDrivers: [{ trabajos: 'CAOJAR' }, { trabajos: 'CAOJAR800' }], icon: <Grid /> }
+    { id: 26, name: 'JARDIN AZUAYO', subsistema: 'CASBS', puertoLocal: '7765', puertoRemoto: '----', ip: '10.100.2.21', subDrivers: [{ trabajos: 'CAOJAR' }, { trabajos: 'CAOJAR800' }], icon: <Grid /> },
+    { id: 27, name: 'VTEX', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '10102', ip: 'VALIDAR LA IP Y LA PARAMETRIZACIÓN', subDrivers: [{ trabajos: 'VTEXVIPSE1' }, { trabajos: 'VTEXVIPSE2' }, { trabajos: 'VTEXVIPSE3' }, { trabajos: 'VTEXVIPSE4' }, { trabajos: 'VTEXVIPSE5' }, { trabajos: 'VTEXVIPSE6' }, { trabajos: 'VTEXVIPSE7' }, { trabajos: 'VTEXVIPSE8' }, { trabajos: 'VTEXVIPSE9' }, { trabajos: 'VTEX800' }, { trabajos: 'VTEXINTER' }], icon: <Activity /> }
   ];
 
   // Datos de los drivers del Gestor
@@ -104,10 +105,27 @@ const DriverManagement = () => {
   // Obtener el conjunto de drivers activo según la pestaña seleccionada
   const activeDrivers = activeTab === 'cao' ? driversCao : driversGestor;
 
-  // Filtrado de drivers
-  const filteredDrivers = activeDrivers.filter(driver =>
-    driver.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Filtrado de drivers (por nombre de driver o por nombre de trabajo)
+  const filteredDrivers = activeDrivers.filter(driver => {
+    // Buscar por nombre del driver
+    if (driver.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return true;
+    }
+    
+    // Buscar por trabajo principal
+    if (driver.trabajos && driver.trabajos.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return true;
+    }
+    
+    // Buscar en sub-drivers/trabajos
+    if (driver.subDrivers) {
+      return driver.subDrivers.some(subDriver => 
+        subDriver.trabajos.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    return false;
+  });
 
   // Toggle driver
   const toggleDriver = (driverId) => {
@@ -166,7 +184,7 @@ const DriverManagement = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400 h-4 w-4" />
               <input
                 type="text"
-                placeholder={`Buscar driver ${activeTab === 'cao' ? 'CAO' : 'Gestor'}...`}
+                placeholder={`Buscar driver o trabajo ${activeTab === 'cao' ? 'CAO' : 'Gestor'}...`}
                 className="w-full pl-9 pr-4 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
