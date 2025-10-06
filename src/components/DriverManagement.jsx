@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Search, Database, Server, X, Activity, Cloud, Layers, Settings, Grid, BarChart, CreditCard, TrendingUp, Smartphone, Globe, Building2, Zap, Users, ArrowRightLeft, Banknote, Shield, ChevronDown } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Search, Database, Server, X, Activity, Cloud, Layers, Settings, Grid, BarChart, CreditCard, Terminal, AlertTriangle, Zap, Upload, Download } from 'lucide-react';
 
 const SystemManagement = () => {
   const [currentModule, setCurrentModule] = useState('drivers');
@@ -7,46 +7,44 @@ const SystemManagement = () => {
   const [expandedDriver, setExpandedDriver] = useState(null);
   const [activeTab, setActiveTab] = useState('cao');
   const [transactionSearchTerm, setTransactionSearchTerm] = useState('');
-  const [currentFilter, setCurrentFilter] = useState('all');
-  const [viewMode, setViewMode] = useState('table'); // 'table' o 'compact'
+  const [searchField, setSearchField] = useState('all');
+  const [selectedEntity, setSelectedEntity] = useState(null);
 
-  // Datos de los drivers del CAO
   const driversCao = [
     { id: 1, name: 'OFICIAL', trabajos: 'OFICIAL', subsistema: 'CASBS', puertoLocal: '7704', puertoRemoto: '----', ip: '10.100.2.4', icon: <Database /> },
     { id: 2, name: 'ONLINE-COLAS', subsistema: 'CASBS', puertoLocal: '7706', puertoRemoto: '----', ip: '10.100.2.4', subDrivers: [{ trabajos: 'ONLINECOLA' }, { trabajos: 'ONLINESE1' }, { trabajos: 'ONLINESE2' }, { trabajos: 'ONLINESE3' }], icon: <Cloud /> },
     { id: 3, name: 'RECARGA', trabajos: 'ONLRECARGA', subsistema: 'CASBS', puertoLocal: '7716', puertoRemoto: '----', ip: '10.100.2.4', icon: <Activity /> },
     { id: 4, name: 'ONLINE MASIVO', trabajos: 'ONLINEMAS', subsistema: 'CASBS', puertoLocal: '7709', puertoRemoto: '----', ip: '10.100.2.4', icon: <Grid /> },
     { id: 5, name: 'TRANSACCIONAL', subsistema: 'CASBS', puertoLocal: '7900', puertoRemoto: '----', ip: '10.100.2.4', subDrivers: [{ trabajos: 'CAOTRX' }, { trabajos: 'CAOTRXSE1' }, { trabajos: 'CAOTRX800' }], icon: <BarChart /> },
-    { id: 6, name: 'DRIVER SEGURIDAD - NSP ATALLA', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '7000', subDrivers: [{ trabajos: 'NSPATALLA', ip: '10.13.20.10 UIO 1' }, { trabajos: 'NSP800', ip: '10.13.20.11 UIO 2' }, { trabajos: '-------', ip: '10.10.4.181 GYE' }], icon: <Settings /> },
-    { id: 7, name: 'DATAFAST VISA', subsistema: 'CASBS', puertoLocal: '7701', puertoRemoto: '----', ip: '192.168.61.2', subDrivers: [{ trabajos: 'DATVISA' }, { trabajos: 'DATVISA800' }, { trabajos: 'DATVISSE1' }, { trabajos: 'DATVISSE2' }, { trabajos: 'DATVISSE3' }], icon: <Cloud /> },
-    { id: 8, name: 'DATAFAST DINERS', subsistema: 'CASBS', puertoLocal: '7702', puertoRemoto: '----', ip: '192.168.61.2', subDrivers: [{ trabajos: 'DATDINER' }, { trabajos: 'DATDINERTI' }, { trabajos: 'DATDINER800' }], icon: <Cloud /> },
-    { id: 9, name: 'VISA EMISIÓN', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '10100', subDrivers: [{ trabajos: 'VISE' }, { trabajos: 'VISE800' }], icon: <Activity /> },
-    { id: 10, name: 'VISA ADQUIRENCIA', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '10101', subDrivers: [{ trabajos: 'VISA' }, { trabajos: 'VISA800' }], icon: <Activity /> },
-    { id: 11, name: 'DCI', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '3083', subDrivers: [{ trabajos: 'DCI' }, { trabajos: 'DCICASE1' }, { trabajos: 'DCIINTER1' }, { trabajos: 'DCIREENVIO' }, { trabajos: 'DCI800' }, { trabajos: 'DCIVTXINTE' }], icon: <Server /> },
-    { id: 12, name: 'DCI2', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '3083', subDrivers: [{ trabajos: 'DC2' }, { trabajos: 'DC2800' }], icon: <Server /> },
-    { id: 13, name: 'MCI', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '6083', subDrivers: [{ trabajos: 'MASTER' }, { trabajos: 'MASTER800' }], icon: <Database /> },
-    { id: 14, name: 'MDS', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '6086', subDrivers: [{ trabajos: 'CAOMDS' }, { trabajos: 'CAOMDS800' }], icon: <Database /> },
-    { id: 15, name: 'BANRED', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '2015', subDrivers: [{ trabajos: 'BANRED' }, { trabajos: 'BANRED800' }], icon: <Layers /> },
-    { id: 16, name: 'BANRED-B24', subsistema: 'CASBS', puertoLocal: '7793', puertoRemoto: '----', subDrivers: [{ trabajos: 'CAOB24' }, { trabajos: 'CAOB24800' }], icon: <Layers /> },
-    { id: 17, name: 'BANRED-B25', subsistema: 'CASBS', puertoLocal: '7795', puertoRemoto: '----', subDrivers: [{ trabajos: 'CAOB25' }, { trabajos: 'CAOB25800' }], icon: <Layers /> },
-    { id: 18, name: 'BANCO PICHINCHA (EFECTIVO EXPRESS)', subsistema: 'CASBS', puertoLocal: '7715', puertoRemoto: '----', ip: '192.168.77.113', subDrivers: [{ trabajos: 'CAOPICH' }, { trabajos: 'CAOPICH800' }], icon: <Grid /> },
-    { id: 19, name: 'PULSE', subsistema: 'CASBS', puertoLocal: '4198', puertoRemoto: '----', ip: '199.38.157.104', subDrivers: [{ trabajos: 'CAOPUL' }, { trabajos: 'CAOPUL800' }], icon: <Activity /> },
+    { id: 6, name: 'DRIVER SEGURIDAD - NSP ATALLA', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '7000', subDrivers: [{ trabajos: 'NSPATALLA' }, { trabajos: 'NSP800' }], ip: '10.13.20.10 UIO 1 / 10.13.20.11 UIO 2 / 10.10.4.181 GYE', icon: <Settings /> },
+    { id: 7, name: 'DATAFAST VISA', subsistema: 'CASBS', puertoLocal: '7701', puertoRemoto: '----', ip: '192.168.61.2', subDrivers: [{ trabajos: 'DATVISA' }, { trabajos: 'DATVISA800' }, { trabajos: 'DATVISSE1' }, { trabajos: 'DATVISSE2' }, { trabajos: 'DATVISSE3' }, { trabajos: 'DATVISSE4' }, { trabajos: 'DATVISSE5' }, { trabajos: 'DATVISSE6' }, { trabajos: 'DATVISSE7' }, { trabajos: 'DATVISSE8' }, { trabajos: 'DATVISSE9' }], icon: <Cloud /> },
+    { id: 8, name: 'DATAFAST DINERS', subsistema: 'CASBS', puertoLocal: '7702', puertoRemoto: '----', ip: '192.168.61.2', subDrivers: [{ trabajos: 'DATDINER' }, { trabajos: 'DATDINERTI' }, { trabajos: 'DATDINER800' }, { trabajos: 'DATDINSE1' }, { trabajos: 'DATDINSE2' }, { trabajos: 'DATDINSE3' }, { trabajos: 'DATDINSE4' }, { trabajos: 'DATDINSE5' }, { trabajos: 'DATDINSE6' }], icon: <Cloud /> },
+    { id: 9, name: 'VISA EMISIÓN', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '10100', subDrivers: [{ trabajos: 'VISE' }, { trabajos: 'VISEVIPSE1' }, { trabajos: 'VISEVIPSE2' }, { trabajos: 'VISEVIPSE3' }, { trabajos: 'VISEVIPSE4' }, { trabajos: 'VISEVIPSE5' }, { trabajos: 'VISEVIPSE6' }, { trabajos: 'VISEVIPSE7' }, { trabajos: 'VISEVIPSE8' }, { trabajos: 'VISEVIPSE9' }, { trabajos: 'VISE800' }], ip: 'UIO 10.11.20.10 / GYE 10.11.4.10', icon: <Activity /> },
+    { id: 10, name: 'VISA ADQUIRENCIA', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '10101', subDrivers: [{ trabajos: 'VISA' }, { trabajos: 'VISATI' }, { trabajos: 'VISAVIPSE1' }, { trabajos: 'VISAVIPSE2' }, { trabajos: 'VISAVIPSE3' }, { trabajos: 'VISAVIPSE4' }, { trabajos: 'VISAVIPSE5' }, { trabajos: 'VISAVIPSE6' }, { trabajos: 'VISAVIPSE7' }, { trabajos: 'VISAVIPSE8' }, { trabajos: 'VISAVIPSE9' }, { trabajos: 'VISA800' }], ip: 'UIO 10.11.20.10 / GYE 10.11.4.10', icon: <Activity /> },
+    { id: 11, name: 'DCI', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '3083', subDrivers: [{ trabajos: 'DCI' }, { trabajos: 'DCICAOSE1' }, { trabajos: 'DCIINTERTI' }, { trabajos: 'DCIREENVIO' }, { trabajos: 'DCI800' }, { trabajos: 'DCIVTXINTE' }], ip: 'UIO 199.38.157.21 / GYE 199.38.157.21', icon: <Server /> },
+    { id: 12, name: 'DCI2', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '3083', subDrivers: [{ trabajos: 'DC2' }, { trabajos: 'DC2CAOSE1' }, { trabajos: 'DC2INTERTI' }, { trabajos: 'DC2REENVIO' }, { trabajos: 'DC2800' }], ip: 'UIO 199.38.157.41 / GYE 199.38.157.41', icon: <Server /> },
+    { id: 13, name: 'MCI', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '6083', subDrivers: [{ trabajos: 'MASTER' }, { trabajos: 'MASTERSE1' }, { trabajos: 'MASTERSE2' }, { trabajos: 'MASTERSE3' }, { trabajos: 'MASTERSE4' }, { trabajos: 'MASTERSE5' }, { trabajos: 'MASTERTI' }, { trabajos: 'MASTER800' }], ip: 'UIO 10.121.70.55 / 10.121.70.56 / GYE 10.121.30.55', icon: <Database /> },
+    { id: 14, name: 'MDS', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '6086', subDrivers: [{ trabajos: 'CAOMDS' }, { trabajos: 'CAOMDSSE1' }, { trabajos: 'CAOMDSSE2' }, { trabajos: 'CAOMDSSE3' }, { trabajos: 'CAOMDSSE4' }, { trabajos: 'CAOMDSSE5' }, { trabajos: 'CAOMDSTI' }, { trabajos: 'CAOMDS800' }], ip: 'UIO 10.121.70.55 / 10.121.70.56 / GYE 10.121.30.55', icon: <Database /> },
+    { id: 15, name: 'BANRED', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '2015', subDrivers: [{ trabajos: 'BANRED' }, { trabajos: 'BANRED800' }, { trabajos: 'CAOBANSE1' }, { trabajos: 'CAOBANSE2' }, { trabajos: 'CAOBANSE3' }, { trabajos: 'CAOBANSE4' }], ip: '172.20.20.55', icon: <Layers /> },
+    { id: 16, name: 'BANRED-B24', subsistema: 'CASBS', puertoLocal: '7793', puertoRemoto: '----', subDrivers: [{ trabajos: 'CAOB24' }, { trabajos: 'CAOB24SE1' }, { trabajos: 'CAOB24SMV' }, { trabajos: 'CAOB24800' }], ip: '172.30.30.4', icon: <Layers /> },
+    { id: 17, name: 'BANRED-B25', subsistema: 'CASBS', puertoLocal: '7795', puertoRemoto: '----', subDrivers: [{ trabajos: 'CAOB25' }, { trabajos: 'CAOB25SE1' }, { trabajos: 'CAOB25SE2' }, { trabajos: 'CAOB25SE3' }, { trabajos: 'CAOB25SE4' }, { trabajos: 'CAOB25SE5' }, { trabajos: 'CAOB25800' }], ip: '172.30.30.4', icon: <Layers /> },
+    { id: 18, name: 'BANCO PICHINCHA (EFECTIVO EXPRESS)', subsistema: 'CASBS', puertoLocal: '7715', puertoRemoto: '----', ip: '192.168.77.113', subDrivers: [{ trabajos: 'CAOPICH' }, { trabajos: 'CAOPICH800' }, { trabajos: 'CAOPICSE1' }], icon: <Grid /> },
+    { id: 19, name: 'PULSE', subsistema: 'CASBS', puertoLocal: '4198', puertoRemoto: '----', ip: '199.38.157.104', subDrivers: [{ trabajos: 'CAOPUL' }, { trabajos: 'CAOPULSE1' }, { trabajos: 'CAOPULTO' }, { trabajos: 'CAOPUL800' }], icon: <Activity /> },
     { id: 20, name: 'ATM DINERS', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '8109', ip: '10.100.176.223', subDrivers: [{ trabajos: 'DATBRK' }, { trabajos: 'DATBRK800' }], icon: <Grid /> },
-    { id: 21, name: 'BROKER (TRANSFERENCIAS INTERBANCARIAS)', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '9001', ip: '10.100.176.223', subDrivers: [{ trabajos: 'CAOBRO' }, { trabajos: 'CAOBRO800' }], icon: <Grid /> },
-    { id: 22, name: 'DOCK', subsistema: 'BANREDSBS', puertoLocal: '----', puertoRemoto: '10185', ip: '10.19.225.10', subDrivers: [{ trabajos: 'CAODCK' }, { trabajos: 'CAODCK800' }], icon: <Layers /> },
-    { id: 23, name: 'MÓDULO GRÁFICO', subsistema: 'QINTER', puertoLocal: '52000', puertoRemoto: '----', ip: '----', subDrivers: [{ trabajos: 'LISTEN2550' }, { trabajos: 'LISTEN721' }], icon: <BarChart /> },
+    { id: 21, name: 'BROKER (TRANSFERENCIAS INTERBANCARIAS)', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '9001', ip: '10.100.176.223', subDrivers: [{ trabajos: 'CAOBRO' }, { trabajos: 'CAOBROSE1' }, { trabajos: 'CAOBROTIME' }, { trabajos: 'CAOBRO800' }], icon: <Grid /> },
+    { id: 22, name: 'DOCK', subsistema: 'BANREDSBS', puertoLocal: '----', puertoRemoto: '10185', ip: '10.19.225.10', subDrivers: [{ trabajos: 'CAODCK' }, { trabajos: 'CAODCKINTE' }, { trabajos: 'CAODCKSE1' }, { trabajos: 'CAODCK800' }], icon: <Layers /> },
+    { id: 23, name: 'MÓDULO GRÁFICO', subsistema: 'QINTER', puertoLocal: '52000 / 51000 / 64000 / 63000', puertoRemoto: '----', ip: '----', subDrivers: [{ trabajos: 'LISTEN2550' }, { trabajos: 'LISTEN550' }, { trabajos: 'LISTEN2721' }, { trabajos: 'LISTEN721' }], icon: <BarChart /> },
     { id: 24, name: 'TRABAJO DE DEPURACIÓN', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '----', ip: 'Op. DEPURCION ARCHIVOS TEMPORALES', subDrivers: [{ trabajos: 'CAODEPURA' }], icon: <Settings /> },
-    { id: 25, name: 'BPC-BP', subsistema: 'CASBS', puertoLocal: '7723', puertoRemoto: '----', ip: '10.14.64.11 o 10.14.64.12', subDrivers: [{ trabajos: 'CAOBPC' }, { trabajos: 'CAOBPC800' }], icon: <Settings /> },
-    { id: 26, name: 'JARDIN AZUAYO', subsistema: 'CASBS', puertoLocal: '7765', puertoRemoto: '----', ip: '10.100.2.21', subDrivers: [{ trabajos: 'CAOJAR' }, { trabajos: 'CAOJAR800' }], icon: <Grid /> },
-    { id: 27, name: 'VTEX', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '10102', ip: 'VALIDAR LA IP Y LA PARAMETRIZACIÓN', subDrivers: [{ trabajos: 'VTEXVIPSE1' }, { trabajos: 'VTEXVIPSE2' }, { trabajos: 'VTEXVIPSE3' }, { trabajos: 'VTEXVIPSE4' }, { trabajos: 'VTEXVIPSE5' }, { trabajos: 'VTEXVIPSE6' }, { trabajos: 'VTEXVIPSE7' }, { trabajos: 'VTEXVIPSE8' }, { trabajos: 'VTEXVIPSE9' }, { trabajos: 'VTEX800' }, { trabajos: 'VTEXINTER' }], icon: <Activity /> }
+    { id: 25, name: 'BPC-BP', subsistema: 'CASBS', puertoLocal: '7723', puertoRemoto: '----', ip: '10.14.64.11 o 10.14.64.12', subDrivers: [{ trabajos: 'CAOBPC' }, { trabajos: 'CAOBPCSE1' }, { trabajos: 'CAOBPCSE2' }, { trabajos: 'CAOBPCSE3' }, { trabajos: 'CAOBPCSE4' }, { trabajos: 'CAOBPC800' }], icon: <Settings /> },
+    { id: 26, name: 'JARDIN AZUAYO', subsistema: 'CASBS', puertoLocal: '7765', puertoRemoto: '----', ip: '10.100.2.21', subDrivers: [{ trabajos: 'CAOJAR800' }, { trabajos: 'CAOJARSE9' }, { trabajos: 'CAOJARSE8' }, { trabajos: 'CAOJARSE7' }, { trabajos: 'CAOJARSE6' }, { trabajos: 'CAOJARSE5' }, { trabajos: 'CAOJARSE4' }, { trabajos: 'CAOJARSE3' }, { trabajos: 'CAOJARSE2' }, { trabajos: 'CAOJARSE1' }, { trabajos: 'CAOJAR' }], icon: <Grid /> },
+    { id: 27, name: 'VTEX', subsistema: 'CASBS', puertoLocal: '----', puertoRemoto: '10102', ip: 'VALIDAR LA IP Y LA PARAMETRIZACIÓN', subDrivers: [{ trabajos: 'VTEX' }, { trabajos: 'VTEXVIPSE1' }, { trabajos: 'VTEXVIPSE2' }, { trabajos: 'VTEXVIPSE3' }, { trabajos: 'VTEXVIPSE4' }, { trabajos: 'VTEXVIPSE5' }, { trabajos: 'VTEXVIPSE6' }, { trabajos: 'VTEXVIPSE7' }, { trabajos: 'VTEXVIPSE8' }, { trabajos: 'VTEXVIPSE9' }, { trabajos: 'VTEX800' }, { trabajos: 'VTEX2INTER' }], icon: <Activity /> }
   ];
 
-  // Datos de los drivers del Gestor
   const driversGestor = [
     { id: 101, name: 'OFICIAL', subsistema: 'ASEB10SBS', puertoLocal: '----', puertoRemoto: '7704', ip: '10.100.2.21', icon: <Settings />, subDrivers: [
       { trabajos: 'ASGOFIADM' },
       { trabajos: 'ASGOFIADM2' },
-      { trabajos: 'CAOFIASG' }
+      { trabajos: 'CAOOFIASG' }
     ]},
     { id: 102, name: 'ONLINE COLAS', subsistema: 'ASEB10SBS', puertoLocal: '----', puertoRemoto: '7706', ip: '10.100.2.21', icon: <Cloud />, subDrivers: [
       { trabajos: 'ASGONLCOLA' },
@@ -59,9 +57,10 @@ const SystemManagement = () => {
       { trabajos: 'SMSANULAUT' }
     ]},
     { id: 104, name: 'ONLINE MASIVO', subsistema: 'ASEB10SBS', puertoLocal: '----', puertoRemoto: '7709', ip: '10.100.2.21', icon: <Grid />, subDrivers: [
-      { trabajos: 'CAOONLINEMX' }
+      { trabajos: 'CAOONLINEM' }
     ]},
     { id: 105, name: 'TRANSACCIONAL', subsistema: 'ASEB10SBS', puertoLocal: '----', puertoRemoto: '7900', ip: '10.100.2.21', icon: <BarChart />, subDrivers: [
+      { trabajos: 'DATGESCTRX' },
       { trabajos: 'DATGESR1' },
       { trabajos: 'DATGESATRX' }
     ]},
@@ -87,7 +86,7 @@ const SystemManagement = () => {
       { trabajos: 'TRCVGESDTA' },
       { trabajos: 'TSNDGESDTA' }
     ]},
-    { id: 111, name: 'WRKJOBSCDE', subsistema: 'QINTER', puertoLocal: '52000/60001/53000/51000/62000/63000/64000', puertoRemoto: '----', ip: '----', icon: <BarChart />, subDrivers: [
+    { id: 111, name: 'WRKJOBSCDE', subsistema: 'QINTER', puertoLocal: '52000 / 60001 / 53000 / 51000 / 62000 / 63000 / 64000', puertoRemoto: '----', ip: '----', icon: <BarChart />, subDrivers: [
       { trabajos: 'LISTEN2' },
       { trabajos: 'LISTEN610' },
       { trabajos: 'PLEXLISOND' },
@@ -96,346 +95,138 @@ const SystemManagement = () => {
       { trabajos: 'PLEXLIS72A' },
       { trabajos: 'PLEXLIS72B' }
     ]},
-    { id: 112, name: 'SMSLISTEN', subsistema: 'QSMSSBS', puertoLocal: '24001', puertoRemoto: '----', ip: '----', icon: <Activity />},
+    { id: 112, name: 'SMSLISTEN', subsistema: 'QSMSSBS', puertoLocal: '24001', puertoRemoto: '----', ip: '----', icon: <Activity />, trabajos: 'SMSLISTEN'},
     { id: 113, name: 'CIERRE DE OPERACIONES', subsistema: 'ASEB10SBS', puertoLocal: '----', puertoRemoto: '----', ip: '10.100.2.4', icon: <Database />, subDrivers: [
-      { trabajos: 'ASGCIEADM' },
-      { trabajos: '(5 TRABAJOS' }
+      { trabajos: 'ASGCIEADM (5 TRABAJOS DEBEN ESTAR LEVANTADOS)' }
     ]},
     { id: 114, name: 'IMPRESIÓN TARJETAS DE DEBITO DOCK', subsistema: 'ASEB10SBS', puertoLocal: '----', puertoRemoto: '----', ip: '10.100.2.4', icon: <Grid />, subDrivers: [
       { trabajos: 'DTARB001' }
     ]}
   ];
 
-  // Datos de transacciones completos
-  const transactions = [
+  const entities = [
     {
-      id: 1,
-      entidadSistema: 'DCI',
-      red: 'AJENA',
-      subred: 'GENERAL',
-      entidadTipo: 'DC',
-      marca: '-',
-      centroResolutor: '',
-      kpis: ['KPI - DCI - Transacciones aprobadas', 'KPI - DCI - Transacciones rechazadas'],
-      descripcion: 'Transacciones que vienen de fuera, para Diners y Discover',
-      search: 'dci dc diners discover transacciones aprobadas rechazadas ajena',
-      type: 'ajenas',
-      color: 'red'
+      name: "DCI",
+      instances: [
+        { red: "AJENA", subred: "GENERAL", entidad: "DC", marca: "-", tipoVia: "", centroResolutor: "", thinkserver: "KPI - DCI - Transacciones aprobadas, KPI - DCI - Transacciones rechazadas", descripcion: "Transacciones que vienen de fuera, para Diners y Discover", tipo: "ADQUIRENCIA" },
+        { red: "PROPIAS", subred: "GENERAL", entidad: "IN", marca: "DN", tipoVia: "", centroResolutor: "", thinkserver: "", descripcion: "Transacciones que nosotros capturamos y enviamos.", tipo: "EMISIÓN" }
+      ]
     },
     {
-      id: 2,
-      entidadSistema: 'DCI',
-      red: 'PROPIAS',
-      subred: 'GENERAL',
-      entidadTipo: 'IN',
-      marca: 'DN',
-      centroResolutor: '',
-      kpis: ['Transacciones capturadas y enviadas'],
-      descripcion: 'Transacciones que nosotros capturamos y enviamos',
-      search: 'dci in dn diners discover propias capturadas enviamos',
-      type: 'propias',
-      color: 'blue'
+      name: "Datafast Diners/Discover",
+      instances: [
+        { red: "PROPIAS", subred: "POS", entidad: "DC", marca: "-", tipoVia: "", centroResolutor: "", thinkserver: "KPI - DataFast - Diners -Transacciones aprobadas, KPI - DataFast - Diners - Transacciones rechazadas, KPI - DataFast - Discover - Transacciones aprobadas, KPI - DataFast - Discover - Transacciones rechazadas", descripcion: "Transacciones para Diners y Discover a través de POS", tipo: "ADQUIRENCIA" }
+      ]
     },
     {
-      id: 3,
-      entidadSistema: 'Datafast Diners/Discover',
-      red: 'PROPIAS',
-      subred: 'POS',
-      entidadTipo: 'DC',
-      marca: '-',
-      centroResolutor: '',
-      kpis: ['KPI - DataFast - Diners - Transacciones aprobadas', 'KPI - DataFast - Diners - Transacciones rechazadas', 'KPI - DataFast - Discover - Transacciones aprobadas', 'KPI - DataFast - Discover - Transacciones rechazadas'],
-      descripcion: 'Transacciones para Diners y Discover a través de POS',
-      search: 'datafast diners discover dc pos transacciones aprobadas rechazadas',
-      type: 'propias pos',
-      color: 'green'
+      name: "Datafast Visa/Mastercard",
+      instances: [
+        { red: "PROPIAS", subred: "POS", entidad: "PI", marca: "-", tipoVia: "", centroResolutor: "", thinkserver: "KPI - DataFast - VISA - Transacciones aprobadas, KPI - DataFast - VISA - Transacciones rechazadas, KPI - DataFast - Master Card - Transacciones aprobadas, KPI - DataFast - Master Card - Transacciones rechazadas", descripcion: "Transacciones para Visa y Mastercard a través de POS", tipo: "ADQUIRENCIA" }
+      ]
     },
     {
-      id: 4,
-      entidadSistema: 'Datafast Visa/Mastercard',
-      red: 'PROPIAS',
-      subred: 'POS',
-      entidadTipo: 'PI',
-      marca: '-',
-      centroResolutor: '',
-      kpis: ['KPI - DataFast - VISA - Transacciones aprobadas', 'KPI - DataFast - VISA - Transacciones rechazadas', 'KPI - DataFast - Master Card - Transacciones aprobadas', 'KPI - DataFast - Master Card - Transacciones rechazadas'],
-      descripcion: 'Transacciones para Visa y Mastercard a través de POS',
-      search: 'datafast visa mastercard pi pos transacciones aprobadas rechazadas',
-      type: 'propias pos',
-      color: 'green'
+      name: "Visa Internacional",
+      instances: [
+        { red: "AJENA", subred: "GENERAL", entidad: "PI", marca: "VI", tipoVia: "", centroResolutor: "", thinkserver: "KPI - VAP - Transacciones aprobadas, KPI - VAP - Transacciones rechazadas", descripcion: "Transacciones que vienen de fuera.", tipo: "ADQUIRENCIA" },
+        { red: "PROPIAS", subred: "GENERAL", entidad: "IN", marca: "VI", tipoVia: "", centroResolutor: "", thinkserver: "", descripcion: "Transacciones que nosotros capturamos y enviamos.", tipo: "EMISIÓN" }
+      ]
     },
     {
-      id: 5,
-      entidadSistema: 'Visa Internacional',
-      red: 'AJENA',
-      subred: 'GENERAL',
-      entidadTipo: 'PI',
-      marca: 'VI',
-      centroResolutor: '',
-      kpis: ['KPI - VAP - Transacciones aprobadas', 'KPI - VAP - Transacciones rechazadas'],
-      descripcion: 'Transacciones que vienen de fuera',
-      search: 'visa internacional pi vi vap transacciones aprobadas rechazadas ajena',
-      type: 'ajenas',
-      color: 'red'
+      name: "MasterCard Internacional",
+      instances: [
+        { red: "AJENA", subred: "GENERAL", entidad: "PI", marca: "MC", tipoVia: "", centroResolutor: "", thinkserver: "KPI - MCI - Transacciones aprobadas, KPI - MCI - Transacciones rechazadas", descripcion: "Transacciones que vienen de fuera a través de MasterCard.", tipo: "ADQUIRENCIA" },
+        { red: "PROPIAS", subred: "GENERAL", entidad: "IN", marca: "MC", tipoVia: "", centroResolutor: "", thinkserver: "", descripcion: "Transacciones que nosotros capturamos y enviamos a MasterCard.", tipo: "EMISIÓN" }
+      ]
     },
     {
-      id: 6,
-      entidadSistema: 'Visa Internacional',
-      red: 'PROPIAS',
-      subred: 'GENERAL',
-      entidadTipo: 'IN',
-      marca: 'VI',
-      centroResolutor: '',
-      kpis: ['Transacciones capturadas y enviadas'],
-      descripcion: 'Transacciones que nosotros capturamos y enviamos',
-      search: 'visa internacional in vi propias capturadas enviamos',
-      type: 'propias',
-      color: 'blue'
+      name: "MasterCard MDS",
+      instances: [
+        { red: "PROPIAS", subred: "ATM", entidad: "IN", marca: "MC", tipoVia: "", centroResolutor: "", thinkserver: "KPI - MCI MDS - Transacciones aprobadas, KPI - MCI MDS - Transacciones rechazadas", descripcion: "Transacciones con tarjetas ajenas MasterCard en cajeros nuestros.", tipo: "ADQUIRENCIA" }
+      ]
     },
     {
-      id: 7,
-      entidadSistema: 'MasterCard Internacional',
-      red: 'AJENA',
-      subred: 'GENERAL',
-      entidadTipo: 'PI',
-      marca: 'MC',
-      centroResolutor: '',
-      kpis: ['KPI - MCI - Transacciones aprobadas', 'KPI - MCI - Transacciones rechazadas'],
-      descripcion: 'Transacciones que vienen de fuera a través de MasterCard',
-      search: 'mastercard internacional pi mc mci transacciones aprobadas rechazadas ajena',
-      type: 'ajenas',
-      color: 'red'
+      name: "Botón de pagos Placetopay",
+      instances: [
+        { red: "PROPIAS", subred: "INTERNET", entidad: "", marca: "", tipoVia: "PlacetoPay", centroResolutor: "", thinkserver: "KPI - Nuevo Botón de Pagos PTP - Transacciones anuladas, KPI - Nuevo Botón de Pagos PTP - Transacciones aprobadas, KPI - Nuevo Botón de Pagos PTP - Transacciones rechazadas, KPI - Nuevo Botón de Pagos PTP - Transacciones totales", descripcion: "Transacciones que se realizan en el botón de pagos a través de Placetopay", tipo: "ADQUIRENCIA" }
+      ]
     },
     {
-      id: 8,
-      entidadSistema: 'MasterCard Internacional',
-      red: 'PROPIAS',
-      subred: 'GENERAL',
-      entidadTipo: 'IN',
-      marca: 'MC',
-      centroResolutor: '',
-      kpis: ['Transacciones capturadas y enviadas'],
-      descripcion: 'Transacciones que nosotros capturamos y enviamos a MasterCard',
-      search: 'mastercard internacional in mc propias capturadas enviamos',
-      type: 'propias',
-      color: 'blue'
+      name: "Botón de pagos Datafast",
+      instances: [
+        { red: "PROPIAS", subred: "INTERNET", entidad: "", marca: "", tipoVia: "Datafast", centroResolutor: "", thinkserver: "", descripcion: "Transacciones que se realizan en el botón de pagos a través de Datafast", tipo: "ADQUIRENCIA" }
+      ]
     },
     {
-      id: 9,
-      entidadSistema: 'MasterCard MDS',
-      red: 'PROPIAS',
-      subred: 'ATM',
-      entidadTipo: 'IN',
-      marca: 'MC',
-      centroResolutor: '',
-      kpis: ['KPI - MCI MDS - Transacciones aprobadas', 'KPI - MCI MDS - Transacciones rechazadas'],
-      descripcion: 'Transacciones con tarjetas ajenas MasterCard en cajeros nuestros',
-      search: 'mastercard mds in mc atm cajeros mci transacciones aprobadas rechazadas',
-      type: 'propias atm',
-      color: 'indigo'
+      name: "Nuevo Botón de pagos (Interdin)",
+      instances: [
+        { red: "PROPIAS", subred: "INTERNET", entidad: "", marca: "", tipoVia: "Botón Pagos", centroResolutor: "", thinkserver: "KPI - Nuevo Boton de pagos - MPI, KPI - Nuevo Botón de Pagos - Transacciones anuladas, KPI - Nuevo Botón de Pagos - Transacciones aprobadas, KPI - Nuevo Botón de Pagos - Transacciones negadas, KPI - Nuevo Botón de Pagos - Transacciones totales, KPI - Nuevo Boton de pagos - VPOS", descripcion: "Transacciones que se realizan en el botón de pagos a través del Botón de Interdin", tipo: "ADQUIRENCIA" }
+      ]
     },
     {
-      id: 10,
-      entidadSistema: 'Botón de pagos Placetopay',
-      red: 'PROPIAS',
-      subred: 'INTERNET',
-      entidadTipo: '',
-      marca: 'PlacetoPay',
-      centroResolutor: 'PlacetoPay',
-      kpis: ['KPI - Nuevo Botón de Pagos PTP - Transacciones anuladas', 'KPI - Nuevo Botón de Pagos PTP - Transacciones aprobadas', 'KPI - Nuevo Botón de Pagos PTP - Transacciones rechazadas', 'KPI - Nuevo Botón de Pagos PTP - Transacciones totales'],
-      descripcion: 'Transacciones que se realizan en el botón de pagos a través de Placetopay',
-      search: 'placetopay ptp boton pagos internet transacciones aprobadas rechazadas anuladas totales',
-      type: 'propias internet',
-      color: 'purple'
+      name: "Efectivo express",
+      instances: [
+        { red: "PROPIAS", subred: "BANCO PICHINCHA", entidad: "", marca: "", tipoVia: "Pichincha", centroResolutor: "", thinkserver: "KPI - Pichincha - Diners - Transacciones aprobadas, KPI - Pichincha - Diners - Transacciones rechazadas, KPI - Pichincha - Mastercard - Transacciones aprobadas, KPI - Pichincha - Mastercard - Transacciones rechazadas, KPI - Pichincha - Visa - Transacciones aprobadas, KPI - Pichincha - Visa - Transacciones rechazadas", descripcion: "Transacciones que se realizan a través de ventanilla del Banco Pichincha (Efectivo Express y Pago de Universidades).", tipo: "ADQUIRENCIA" }
+      ]
     },
     {
-      id: 11,
-      entidadSistema: 'Botón de pagos Datafast',
-      red: 'PROPIAS',
-      subred: 'INTERNET',
-      entidadTipo: '',
-      marca: 'Datafast',
-      centroResolutor: 'Datafast',
-      kpis: ['Transacciones botón de pagos'],
-      descripcion: 'Transacciones que se realizan en el botón de pagos a través de Datafast',
-      search: 'datafast boton pagos internet transacciones',
-      type: 'propias internet',
-      color: 'purple'
+      name: "SMS",
+      instances: [
+        { red: "PROPIAS", subred: "SMS", entidad: "", marca: "", tipoVia: "", centroResolutor: "", thinkserver: "KPI - SMS CAO - Transacciones aprobadas, KPI - SMS CAO - Transacciones rechazadas", descripcion: "Compra de minutos a través de SMS.", tipo: "OTRO" }
+      ]
     },
     {
-      id: 12,
-      entidadSistema: 'Nuevo Botón de pagos (Interdin)',
-      red: 'PROPIAS',
-      subred: 'INTERNET',
-      entidadTipo: '',
-      marca: 'Botón Pagos',
-      centroResolutor: 'Botón Pagos',
-      kpis: ['KPI - Nuevo Boton de pagos - MPI', 'KPI - Nuevo Botón de Pagos - Transacciones anuladas', 'KPI - Nuevo Botón de Pagos - Transacciones aprobadas', 'KPI - Nuevo Botón de Pagos - Transacciones negadas', 'KPI - Nuevo Botón de Pagos - Transacciones totales', 'KPI - Nuevo Boton de pagos - VPOS'],
-      descripcion: 'Transacciones que se realizan en el botón de pagos a través del Botón de Interdin',
-      search: 'interdin boton pagos mpi vpos internet transacciones aprobadas negadas anuladas totales',
-      type: 'propias internet',
-      color: 'purple'
+      name: "Discover(Pulse)",
+      instances: [
+        { red: "PROPIAS", subred: "ATM", entidad: "IN", marca: "DN", tipoVia: "", centroResolutor: "", thinkserver: "KPI - PULSE ATM - Transacciones aprobadas, KPI - PULSE ATM - Transacciones rechazadas", descripcion: "Transacciones con tarjetas ajenas en cajeros nuestros.", tipo: "ADQUIRENCIA" }
+      ]
     },
     {
-      id: 13,
-      entidadSistema: 'Efectivo Express',
-      red: 'PROPIAS',
-      subred: 'BANCO PICHINCHA',
-      entidadTipo: '',
-      marca: 'Pichincha',
-      centroResolutor: 'Pichincha',
-      kpis: ['KPI - Pichincha - Diners - Transacciones aprobadas', 'KPI - Pichincha - Diners - Transacciones rechazadas', 'KPI - Pichincha - Mastercard - Transacciones aprobadas', 'KPI - Pichincha - Mastercard - Transacciones rechazadas', 'KPI - Pichincha - Visa - Transacciones aprobadas', 'KPI - Pichincha - Visa - Transacciones rechazadas'],
-      descripcion: 'Transacciones que se realizan a través de ventanilla del Banco Pichincha (Efectivo Express y Pago de Universidades)',
-      search: 'efectivo express pichincha banco ventanilla diners mastercard visa universidades',
-      type: 'propias banco',
-      color: 'orange'
+      name: "Banred",
+      instances: [
+        { red: "PROPIAS", subred: "ATM", entidad: "", marca: "", tipoVia: "Banred", centroResolutor: "", thinkserver: "KPI - BANRED - Transacciones aprobadas, KPI - BANRED - Transacciones rechazadas", descripcion: "Transacciones ATM que se realizan en cajeros que no son nuestros.", tipo: "EMISIÓN" }
+      ]
     },
     {
-      id: 14,
-      entidadSistema: 'SMS',
-      red: 'PROPIAS',
-      subred: 'SMS',
-      entidadTipo: '',
-      marca: '',
-      centroResolutor: '',
-      kpis: ['KPI - SMS CAO - Transacciones aprobadas', 'KPI - SMS CAO - Transacciones rechazadas'],
-      descripcion: 'Compra de minutos a través de SMS',
-      search: 'sms cao minutos transacciones aprobadas rechazadas',
-      type: 'propias sms',
-      color: 'teal'
+      name: "Banred B-25",
+      instances: [
+        { red: "PROPIAS", subred: "BANCO PICHINCHA", entidad: "", marca: "", tipoVia: "B24", centroResolutor: "", thinkserver: "KPI - Banred B25 - ATM - Transacciones aprobadas, KPI - Banred B25 - ATM - Transacciones rechazadas", descripcion: "Transacciones con tarjetas de crédito que vienen de Banco Pichincha a través de B25.", tipo: "ADQUIRENCIA" },
+        { red: "PROPIAS", subred: "ATM", entidad: "", marca: "", tipoVia: "B24", centroResolutor: "", thinkserver: "KPI - Banred B25 - PICHINCHA - Transacciones aprobadas, KPI - Banred B25 - PICHINCHA - Transacciones rechazadas", descripcion: "Transacciones con tarjetas de crédito que vienen a través de nuestros cajeros.", tipo: "ADQUIRENCIA" }
+      ]
     },
     {
-      id: 15,
-      entidadSistema: 'Discover (Pulse)',
-      red: 'PROPIAS',
-      subred: 'ATM',
-      entidadTipo: 'IN',
-      marca: 'DN',
-      centroResolutor: '',
-      kpis: ['KPI - PULSE ATM - Transacciones aprobadas', 'KPI - PULSE ATM - Transacciones rechazadas'],
-      descripcion: 'Transacciones con tarjetas ajenas en cajeros nuestros',
-      search: 'discover pulse in dn atm cajeros transacciones aprobadas rechazadas',
-      type: 'propias atm',
-      color: 'indigo'
+      name: "Banred B-24",
+      instances: [
+        { red: "", subred: "", entidad: "", marca: "", tipoVia: "", centroResolutor: "Banco Pichincha", thinkserver: "KPI - Banred B24 - Transacciones aprobadas, KPI - Banred B24 - Transacciones rechazadas", descripcion: "Transacciones con tarjetas de débito.", tipo: "OTRO" }
+      ]
     },
     {
-      id: 16,
-      entidadSistema: 'Banred',
-      red: 'PROPIAS',
-      subred: 'ATM',
-      entidadTipo: '',
-      marca: 'Banred',
-      centroResolutor: 'Banred',
-      kpis: ['KPI - BANRED - Transacciones aprobadas', 'KPI - BANRED - Transacciones rechazadas'],
-      descripcion: 'Transacciones ATM que se realizan en cajeros que no son nuestros (Pago de tarjetas de crédito propias y transferencias interbancarias en tiempo real)',
-      search: 'banred atm cajeros transacciones aprobadas rechazadas pago transferencias',
-      type: 'propias atm',
-      color: 'indigo'
+      name: "CASH ADVANCE Y DONACIONES (MULTICANALIDAD WEB Y MOBILE)",
+      instances: [
+        { red: "PROPIAS", subred: "INTERNET", entidad: "", marca: "", tipoVia: "Technisys", centroResolutor: "", thinkserver: "", descripcion: "Transacciones monetarias desde el portal y app multicanalidad para Cash Advance y Donaciones.", tipo: "EMISIÓN" }
+      ]
     },
     {
-      id: 17,
-      entidadSistema: 'Banred B-25',
-      red: 'PROPIAS',
-      subred: 'BANCO PICHINCHA',
-      entidadTipo: '',
-      marca: 'B24',
-      centroResolutor: 'B24',
-      kpis: ['KPI - Banred B25 - ATM - Transacciones aprobadas', 'KPI - Banred B25 - ATM - Transacciones rechazadas'],
-      descripcion: 'Transacciones con tarjetas de crédito que vienen de Banco Pichincha a través de B25 (efectivo express, pago de universidades, crédito preciso)',
-      search: 'banred b25 b24 pichincha efectivo express universidades credito',
-      type: 'propias banco',
-      color: 'orange'
+      name: "Dock",
+      instances: [
+        { red: "", subred: "", entidad: "", marca: "", tipoVia: "", centroResolutor: "Banco Diners Club del Ecuador", thinkserver: "KPI - DOCK - Transacciones aprobadas, KPI - DOCK - Transacciones rechazadas", descripcion: "CONSULTA DE SALDOS, AVANCES DE EFECTIVO, CAMBIO DE PIN Y ANULACIONES.", tipo: "EMISIÓN" }
+      ]
     },
     {
-      id: 18,
-      entidadSistema: 'Banred B-25',
-      red: 'PROPIAS',
-      subred: 'ATM',
-      entidadTipo: '',
-      marca: 'B24',
-      centroResolutor: 'B24',
-      kpis: ['KPI - Banred B25 - PICHINCHA - Transacciones aprobadas', 'KPI - Banred B25 - PICHINCHA - Transacciones rechazadas'],
-      descripcion: 'Transacciones con tarjetas de crédito que vienen a través de nuestros cajeros (avances de efectivo)',
-      search: 'banred b25 pichincha atm cajeros avances efectivo',
-      type: 'propias atm',
-      color: 'indigo'
+      name: "BPC - BP",
+      instances: [
+        { red: "", subred: "", entidad: "", marca: "", tipoVia: "", centroResolutor: "Ca BPC", thinkserver: "KPI - BPC - Transacciones aprobadas, KPI - BPC - Transacciones rechazadas", descripcion: "Transacciones Tarjeta Prepago Transporte Banco Pichincha.", tipo: "EMISIÓN" }
+      ]
     },
     {
-      id: 19,
-      entidadSistema: 'Banred B-24',
-      red: '',
-      subred: '',
-      entidadTipo: '',
-      marca: '',
-      centroResolutor: 'Banco Pichincha',
-      kpis: ['KPI - Banred B24 - Transacciones aprobadas', 'KPI - Banred B24 - Transacciones rechazadas'],
-      descripcion: 'Transacciones con tarjetas de débito (consumos locales, avances y consumos en el exterior). Solo transacciones de débito de Banco Pichincha',
-      search: 'banred b24 debito consumos avances exterior pichincha',
-      type: 'propias',
-      color: 'gray'
-    },
-    {
-      id: 20,
-      entidadSistema: 'Cash Advance y Donaciones (Multicanalidad Web y Mobile)',
-      red: 'PROPIAS',
-      subred: 'INTERNET',
-      entidadTipo: '',
-      marca: 'Technisys',
-      centroResolutor: 'Technisys',
-      kpis: ['Cálculo Tipo de Crédito', 'Intereses', 'OTP', 'Autorizaciones'],
-      descripcion: 'Transacciones monetarias desde el portal y app multicanalidad para Cash Advance y Donaciones. Technisys consume los 4 servicios',
-      search: 'cash advance donaciones technisys multicanalidad web mobile portal app',
-      type: 'propias internet',
-      color: 'purple'
-    },
-    {
-      id: 21,
-      entidadSistema: 'Dock',
-      red: '',
-      subred: '',
-      entidadTipo: '',
-      marca: '',
-      centroResolutor: 'Banco Diners Club del Ecuador',
-      kpis: ['KPI - DOCK - Transacciones aprobadas', 'KPI - DOCK - Transacciones rechazadas'],
-      descripcion: 'Consulta de saldos, avances de efectivo, cambio de PIN y anulaciones. Transaccionalidad con tarjetas de DÉBITO BANCO DINERS CLUB DEL ECUADOR',
-      search: 'dock diners club debito saldos avances pin anulaciones',
-      type: 'propias atm',
-      color: 'indigo'
-    },
-    {
-      id: 22,
-      entidadSistema: 'BPC - BP',
-      red: '',
-      subred: '',
-      entidadTipo: '',
-      marca: '',
-      centroResolutor: 'Ca BPC',
-      kpis: ['KPI - BPC - Transacciones aprobadas', 'KPI - BPC - Transacciones rechazadas'],
-      descripcion: 'Transacciones Tarjeta Prepago Transporte Banco Pichincha a través de BPC - BP',
-      search: 'bpc bp prepago transporte pichincha',
-      type: 'propias',
-      color: 'gray'
-    },
-    {
-      id: 23,
-      entidadSistema: 'Jardín Azuayo',
-      red: '',
-      subred: '',
-      entidadTipo: '',
-      marca: '',
-      centroResolutor: 'Ca Jardín Azuayo',
-      kpis: ['KPI - Jardín Azuayo - Transacciones aprobadas', 'KPI - Jardín Azuayo - Transacciones rechazadas'],
-      descripcion: 'Transacciones aprobadas y rechazadas con tarjeta débito Coop. Jardin Azuayo, su centro autorizador JARDIN AZUAYO',
-      search: 'jardin azuayo cooperativa debito centro autorizador',
-      type: 'propias',
-      color: 'emerald'
+      name: "Jardín Azuayo",
+      instances: [
+        { red: "", subred: "", entidad: "", marca: "", tipoVia: "", centroResolutor: "Ca Jardín Azuayo", thinkserver: "KPI - Jardín Azuayo - Transacciones aprobadas, KPI - Jardín Azuayo - Transacciones rechazadas", descripcion: "Transacciones con tarjeta débito Coop. Jardin Azuayo.", tipo: "ADQUIRENCIA" }
+      ]
     }
   ];
 
-  // Obtener drivers activos
   const activeDrivers = activeTab === 'cao' ? driversCao : driversGestor;
 
-  // Filtrar drivers
   const filteredDrivers = activeDrivers.filter(driver => {
     if (driver.name.toLowerCase().includes(searchTerm.toLowerCase())) return true;
     if (driver.trabajos && driver.trabajos.toLowerCase().includes(searchTerm.toLowerCase())) return true;
@@ -447,181 +238,186 @@ const SystemManagement = () => {
     return false;
   });
 
-  // Filtrar transacciones
-  const filteredTransactions = transactions.filter(transaction => {
-    let matchesFilter = false;
+  const filteredEntities = useMemo(() => {
+    if (!transactionSearchTerm.trim()) return entities;
     
-    if (currentFilter === 'all') {
-      matchesFilter = true;
-    } else if (currentFilter === 'propias') {
-      matchesFilter = transaction.red === 'PROPIAS';
-    } else if (currentFilter === 'ajenas') {
-      matchesFilter = transaction.red === 'AJENA';
-    } else {
-      matchesFilter = transaction.type.includes(currentFilter);
-    }
-    
-    const matchesSearch = !transactionSearchTerm || 
-      transaction.search.toLowerCase().includes(transactionSearchTerm.toLowerCase()) ||
-      transaction.entidadSistema.toLowerCase().includes(transactionSearchTerm.toLowerCase()) ||
-      transaction.entidadTipo.toLowerCase().includes(transactionSearchTerm.toLowerCase()) ||
-      transaction.marca.toLowerCase().includes(transactionSearchTerm.toLowerCase()) ||
-      transaction.centroResolutor.toLowerCase().includes(transactionSearchTerm.toLowerCase()) ||
-      transaction.kpis.join(' ').toLowerCase().includes(transactionSearchTerm.toLowerCase());
-    
-    return matchesFilter && matchesSearch;
-  });
+    const term = transactionSearchTerm.toLowerCase();
+    return entities.filter(entity => {
+      if (searchField === 'all' || searchField === 'name') {
+        if (entity.name.toLowerCase().includes(term)) return true;
+      }
+      
+      return entity.instances.some(inst => {
+        if (searchField === 'all' || searchField === 'red') {
+          if (inst.red.toLowerCase().includes(term)) return true;
+        }
+        if (searchField === 'all' || searchField === 'subred') {
+          if (inst.subred.toLowerCase().includes(term)) return true;
+        }
+        if (searchField === 'all' || searchField === 'entidad') {
+          if (inst.entidad.toLowerCase().includes(term)) return true;
+        }
+        if (searchField === 'all' || searchField === 'marca') {
+          if (inst.marca.toLowerCase().includes(term)) return true;
+        }
+        if (searchField === 'all' || searchField === 'tipoVia') {
+          if (inst.tipoVia.toLowerCase().includes(term)) return true;
+        }
+        if (searchField === 'all' || searchField === 'centroResolutor') {
+          if (inst.centroResolutor.toLowerCase().includes(term)) return true;
+        }
+        if (searchField === 'all' || searchField === 'thinkserver') {
+          if (inst.thinkserver.toLowerCase().includes(term)) return true;
+        }
+        if (searchField === 'all' || searchField === 'descripcion') {
+          if (inst.descripcion.toLowerCase().includes(term)) return true;
+        }
+        return false;
+      });
+    });
+  }, [transactionSearchTerm, searchField]);
 
   const toggleDriver = (driverId) => {
     setExpandedDriver(expandedDriver === driverId ? null : driverId);
   };
 
-  // Función para obtener el color del sistema
-  const getSystemColorClasses = (color) => {
-    switch (color) {
-      case 'red': return 'bg-red-100 border-red-300 text-red-800';
-      case 'blue': return 'bg-blue-100 border-blue-300 text-blue-800';
-      case 'green': return 'bg-green-100 border-green-300 text-green-800';
-      case 'purple': return 'bg-purple-100 border-purple-300 text-purple-800';
-      case 'teal': return 'bg-teal-100 border-teal-300 text-teal-800';
-      case 'indigo': return 'bg-indigo-100 border-indigo-300 text-indigo-800';
-      case 'orange': return 'bg-orange-100 border-orange-300 text-orange-800';
-      case 'emerald': return 'bg-emerald-100 border-emerald-300 text-emerald-800';
-      case 'gray': return 'bg-gray-100 border-gray-300 text-gray-800';
-      default: return 'bg-gray-100 border-gray-300 text-gray-800';
-    }
+  const getKpisArray = (thinkserver) => {
+    if (!thinkserver) return [];
+    return thinkserver.split(',').map(k => k.trim()).filter(k => k);
   };
 
-  const getSystemIcon = (sistema) => {
-    if (sistema.includes('DCI')) return <Shield className="w-5 h-5" />;
-    if (sistema.includes('Visa')) return <CreditCard className="w-5 h-5" />;
-    if (sistema.includes('MasterCard')) return <CreditCard className="w-5 h-5" />;
-    if (sistema.includes('Datafast')) return <Zap className="w-5 h-5" />;
-    if (sistema.includes('Placetopay')) return <Globe className="w-5 h-5" />;
-    if (sistema.includes('SMS')) return <Smartphone className="w-5 h-5" />;
-    if (sistema.includes('Banred')) return <ArrowRightLeft className="w-5 h-5" />;
-    if (sistema.includes('Efectivo Express')) return <Building2 className="w-5 h-5" />;
-    if (sistema.includes('Discover')) return <CreditCard className="w-5 h-5" />;
-    if (sistema.includes('Cash Advance')) return <Banknote className="w-5 h-5" />;
-    if (sistema.includes('Dock')) return <Server className="w-5 h-5" />;
-    if (sistema.includes('BPC')) return <CreditCard className="w-5 h-5" />;
-    if (sistema.includes('Jardín')) return <Users className="w-5 h-5" />;
-    return <Activity className="w-5 h-5" />;
-  };
+  const selectedEntityData = selectedEntity !== null ? filteredEntities[selectedEntity] : null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header principal */}
-      <div className={`${
-        currentModule === 'drivers' 
-          ? 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-800'
-          : 'bg-gradient-to-r from-purple-700 via-purple-600 to-purple-800'
-      } text-white p-4 shadow-lg`}>
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-2xl font-bold flex items-center">
-            {currentModule === 'drivers' ? (
-              <>
-                <Server className="mr-2 h-7 w-7" />
-                Gestión de Drivers
-              </>
-            ) : (
-              <>
-                <CreditCard className="mr-2 h-7 w-7" />
-                Consulta de Transacciones
-              </>
-            )}
-          </h1>
-          <p className={`${
-            currentModule === 'drivers' ? 'text-blue-100' : 'text-purple-100'
-          } text-sm`}>
-            {currentModule === 'drivers' 
-              ? 'Sistema de administración de drivers CAO y Gestor'
-              : 'Clasificación mejorada por categorías y tipos de canal'
-            }
-          </p>
+    <div className="min-h-screen bg-black text-green-400" style={{ fontFamily: 'Courier New, monospace' }}>
+      <style>{`
+        @keyframes scan {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(100%); }
+        }
+        @keyframes blink {
+          0%, 49% { opacity: 1; }
+          50%, 100% { opacity: 0; }
+        }
+        .blink { animation: blink 1s infinite; }
+        .glow-green { box-shadow: 0 0 10px rgba(0, 255, 65, 0.6), inset 0 0 10px rgba(0, 255, 65, 0.1); }
+        .glow-cyan { box-shadow: 0 0 10px rgba(0, 255, 255, 0.6), inset 0 0 10px rgba(0, 255, 255, 0.1); }
+        .glow-magenta { box-shadow: 0 0 10px rgba(255, 0, 255, 0.6), inset 0 0 10px rgba(255, 0, 255, 0.1); }
+        .glow-yellow { box-shadow: 0 0 10px rgba(255, 255, 0, 0.6), inset 0 0 10px rgba(255, 255, 0, 0.1); }
+      `}</style>
+
+      {/* Header Matrix Style */}
+      <div className="bg-black border-b-2 border-green-500 shadow-lg shadow-green-500/50">
+        <div className="max-w-7xl mx-auto p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              {currentModule === 'drivers' ? (
+                <>
+                  <Server className="mr-3 h-8 w-8 text-green-400 animate-pulse" />
+                  <div>
+                    <h1 className="text-2xl font-bold text-green-400 tracking-wider">
+                      [SYSTEM MATRIX] DRIVER ACCESS
+                    </h1>
+                    <p className="text-green-500 text-xs mt-1">
+                      &gt; SECURED CONNECTION - CAO/GESTOR MAINFRAME
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Terminal className="mr-3 h-8 w-8 text-cyan-400 animate-pulse" />
+                  <div>
+                    <h1 className="text-2xl font-bold text-cyan-400 tracking-wider">
+                      SISTEMA_TRANSACCIONES
+                    </h1>
+                    <p className="text-magenta-400 text-xs mt-1">
+                      [<span className="text-yellow-400 blink">ACTIVO</span>] ENTIDADES: <span className="text-cyan-400 font-bold">{entities.length}</span>
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
+            <div className="text-right">
+              <div className="text-green-500 text-xs">STATUS: ONLINE</div>
+              <div className="text-green-400 text-xs font-mono">█████ 100%</div>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto p-4">
-        {/* Navegación entre módulos */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <div className="flex space-x-1">
+        {/* Navigation Matrix */}
+        <div className="bg-black border border-green-500 rounded-lg p-4 mb-6 shadow-lg shadow-green-500/30">
+          <div className="flex space-x-2">
             <button 
               onClick={() => setCurrentModule('drivers')} 
-              className={`px-4 py-2 rounded-md text-sm font-medium ${
+              className={`px-4 py-2 rounded font-mono text-sm font-bold transition-all ${
                 currentModule === 'drivers'
-                  ? 'bg-blue-600 text-white' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-green-500 text-black shadow-lg shadow-green-500/50 border-2 border-green-400' 
+                  : 'bg-black text-green-500 border border-green-500 hover:bg-green-900'
               }`}
             >
               <div className="flex items-center">
                 <Server className="w-4 h-4 mr-1" />
-                Gestión de Drivers
+                &gt; DRIVERS_MODULE
               </div>
             </button>
             <button 
               onClick={() => setCurrentModule('transactions')} 
-              className={`px-4 py-2 rounded-md text-sm font-medium ${
+              className={`px-4 py-2 rounded font-mono text-sm font-bold transition-all ${
                 currentModule === 'transactions'
-                  ? 'bg-purple-600 text-white' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-cyan-500 text-black shadow-lg shadow-cyan-500/50 border-2 border-cyan-400' 
+                  : 'bg-black text-cyan-500 border border-cyan-500 hover:bg-cyan-900'
               }`}
             >
               <div className="flex items-center">
-                <CreditCard className="w-4 h-4 mr-1" />
-                Consulta de Transacciones
+                <Terminal className="w-4 h-4 mr-1" />
+                &gt; TRANSACTIONS_MODULE
               </div>
             </button>
           </div>
         </div>
 
-        {/* Módulo de Drivers */}
+        {/* Drivers Module */}
         {currentModule === 'drivers' && (
           <>
-            {/* Controles de Drivers */}
-            <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center space-x-1 mb-4 sm:mb-0">
+            <div className="bg-black border border-green-500 rounded-lg p-4 mb-6 shadow-lg shadow-green-500/30">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex items-center space-x-2">
                   <button 
                     onClick={() => setActiveTab('cao')} 
-                    className={`px-4 py-2 rounded-md text-sm font-medium ${
+                    className={`px-4 py-2 rounded font-mono text-sm font-bold transition-all ${
                       activeTab === 'cao' 
-                        ? 'bg-blue-600 text-white' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-green-500 text-black shadow-lg shadow-green-500/50 border-2 border-green-400' 
+                        : 'bg-black text-green-500 border border-green-500 hover:bg-green-900'
                     }`}
                   >
                     <div className="flex items-center">
                       <Server className="w-4 h-4 mr-1" />
-                      Drivers CAO
-                      <span className="ml-2 px-2 py-0.5 bg-blue-500 text-white text-xs rounded-full">
-                        {driversCao.length}
-                      </span>
+                      CAO [{driversCao.length}]
                     </div>
                   </button>
                   <button 
                     onClick={() => setActiveTab('gestor')} 
-                    className={`px-4 py-2 rounded-md text-sm font-medium ${
+                    className={`px-4 py-2 rounded font-mono text-sm font-bold transition-all ${
                       activeTab === 'gestor' 
-                        ? 'bg-green-600 text-white' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        ? 'bg-green-500 text-black shadow-lg shadow-green-500/50 border-2 border-green-400' 
+                        : 'bg-black text-green-500 border border-green-500 hover:bg-green-900'
                     }`}
                   >
                     <div className="flex items-center">
                       <Settings className="w-4 h-4 mr-1" />
-                      Drivers Gestor
-                      <span className="ml-2 px-2 py-0.5 bg-green-500 text-white text-xs rounded-full">
-                        {driversGestor.length}
-                      </span>
+                      GESTOR [{driversGestor.length}]
                     </div>
                   </button>
                 </div>
                 
-                <div className="relative max-w-md">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-400 h-4 w-4" />
+                <div className="relative max-w-md flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-green-500 h-4 w-4" />
                   <input
                     type="text"
-                    placeholder={`Buscar driver o trabajo ${activeTab === 'cao' ? 'CAO' : 'Gestor'}...`}
-                    className="w-full pl-9 pr-4 py-2 text-sm border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="&gt; SEARCH DRIVER..."
+                    className="w-full pl-9 pr-4 py-2 text-sm bg-black border-2 border-green-500 text-green-400 rounded font-mono focus:ring-2 focus:ring-green-500 focus:shadow-lg focus:shadow-green-500/50"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -629,85 +425,111 @@ const SystemManagement = () => {
               </div>
             </div>
 
-            {/* Contador y etiquetas */}
             <div className="flex justify-between items-center mb-4 px-1">
-              <div className="text-sm text-gray-600 font-medium">
-                {activeTab === 'cao' ? 'Drivers CAO' : 'Drivers Gestor'}
-                <span className="ml-2 bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">
-                  {filteredDrivers.length} mostrados
+              <div className="text-sm text-green-400 font-mono">
+                &gt; {activeTab === 'cao' ? 'CAO_DRIVERS' : 'GESTOR_DRIVERS'}
+                <span className="ml-2 bg-green-500 text-black px-2 py-0.5 rounded text-xs font-bold">
+                  {filteredDrivers.length} ACTIVE
                 </span>
               </div>
               <div className="flex space-x-2">
-                <span className="inline-flex items-center text-xs bg-green-50 border border-green-200 text-green-700 px-2 py-1 rounded-md">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>Puerto Local
+                <span className="inline-flex items-center text-xs bg-black border border-green-500 text-green-400 px-2 py-1 rounded font-mono">
+                  <span className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></span>LOCAL
                 </span>
-                <span className="inline-flex items-center text-xs bg-yellow-50 border border-yellow-200 text-yellow-700 px-2 py-1 rounded-md">
-                  <span className="w-2 h-2 bg-yellow-500 rounded-full mr-1"></span>Puerto Remoto
+                <span className="inline-flex items-center text-xs bg-black border border-yellow-500 text-yellow-400 px-2 py-1 rounded font-mono">
+                  <span className="w-2 h-2 bg-yellow-500 rounded-full mr-1 animate-pulse"></span>REMOTE
                 </span>
               </div>
             </div>
 
-            {/* Grid de Drivers */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
               {filteredDrivers.map((driver) => (
                 <div key={driver.id} className="relative">
                   <button
                     onClick={() => toggleDriver(driver.id)}
-                    className={`w-full h-20 flex flex-col items-center justify-center rounded-lg shadow-sm border transition-all ${
+                    className={`w-full h-24 flex flex-col items-center justify-center rounded border-2 transition-all ${
                       expandedDriver === driver.id 
-                        ? activeTab === 'cao' ? 'bg-blue-600 text-white border-blue-700' : 'bg-green-600 text-white border-green-700'
-                        : 'bg-white hover:bg-blue-50 border-gray-200'
+                        ? 'bg-green-500 text-black border-green-400 shadow-lg shadow-green-500/50' 
+                        : 'bg-black hover:bg-green-900 border-green-500 text-green-400 hover:shadow-lg hover:shadow-green-500/30'
                     }`}
                   >
                     <div className="absolute top-0 left-0 right-0 flex justify-center -mt-2">
                       {driver.puertoLocal && driver.puertoLocal !== '----' && (
-                        <span className="text-xs font-mono px-1.5 py-0.5 rounded-full mx-0.5 bg-green-100 text-green-700 border border-green-300">
+                        <span className="text-xs font-mono px-1.5 py-0.5 rounded mx-0.5 bg-green-500 text-black border border-green-400 font-bold">
                           L:{driver.puertoLocal}
                         </span>
                       )}
                       {driver.puertoRemoto && driver.puertoRemoto !== '----' && (
-                        <span className="text-xs font-mono px-1.5 py-0.5 rounded-full mx-0.5 bg-yellow-100 text-yellow-700 border border-yellow-300">
+                        <span className="text-xs font-mono px-1.5 py-0.5 rounded mx-0.5 bg-yellow-500 text-black border border-yellow-400 font-bold">
                           R:{driver.puertoRemoto}
                         </span>
                       )}
                     </div>
 
                     <div className="mt-1">
-                      <div className={`h-5 w-5 ${expandedDriver === driver.id ? 'text-white' : 'text-blue-500'}`}>
+                      <div className={`h-5 w-5 ${expandedDriver === driver.id ? 'text-black' : 'text-green-400'}`}>
                         {driver.icon || <Database />}
                       </div>
                     </div>
                     
                     <div className="px-1 mt-1 text-center">
-                      <h3 className="text-xs font-medium leading-tight truncate max-w-full">{driver.name}</h3>
-                      <p className={`text-xs mt-0.5 ${expandedDriver === driver.id ? 'text-blue-200' : 'text-gray-500'}`}>
-                        {driver.subDrivers ? `${driver.subDrivers.length} trabajos` : "1 trabajo"}
+                      <h3 className="text-xs font-bold leading-tight truncate max-w-full font-mono">{driver.name}</h3>
+                      <p className={`text-xs mt-0.5 ${expandedDriver === driver.id ? 'text-black' : 'text-green-500'}`}>
+                        {driver.subDrivers ? `${driver.subDrivers.length} JOBS` : "1 JOB"}
                       </p>
                     </div>
                   </button>
 
-                  {/* Modal */}
                   {expandedDriver === driver.id && (
                     <>
                       <div 
-                        className="fixed inset-0 bg-black bg-opacity-50 z-10"
+                        className="fixed inset-0 bg-black bg-opacity-90 z-10"
                         onClick={() => setExpandedDriver(null)}
                       ></div>
                       
-                      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg shadow-2xl z-20 w-11/12 max-w-4xl max-h-[80vh] overflow-auto">
-                        <div className={`sticky top-0 ${activeTab === 'cao' ? 'bg-blue-600' : 'bg-green-600'} text-white px-4 py-3 flex justify-between items-center`}>
-                          <div className="flex items-start">
+                      <div className={`fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black border-2 rounded-lg shadow-2xl z-20 w-11/12 max-w-4xl max-h-[80vh] overflow-auto ${
+                        driver.puertoRemoto && driver.puertoRemoto !== '----' 
+                          ? 'border-yellow-400 shadow-yellow-400/50' 
+                          : 'border-green-500 shadow-green-500/50'
+                      }`}>
+                        <div className={`sticky top-0 text-black px-4 py-3 flex justify-between items-center border-b-2 ${
+                          driver.puertoRemoto && driver.puertoRemoto !== '----'
+                            ? 'bg-yellow-400 border-yellow-300'
+                            : 'bg-green-500 border-green-400'
+                        }`}>
+                          <div className="flex items-start flex-1">
                             <div className="mr-3 mt-1">
                               {driver.icon || <Database className="h-5 w-5" />}
                             </div>
-                            <div>
-                              <h2 className="text-lg font-bold">{driver.name}</h2>
-                              <p className="text-xs text-blue-100">{driver.subsistema} - {driver.subDrivers ? `${driver.subDrivers.length} trabajos` : "1 trabajo"}</p>
+                            <div className="flex-1">
+                              <h2 className="text-lg font-bold font-mono">[ACCESS] {driver.name}</h2>
+                              <p className="text-xs text-black/80 font-mono">&gt; {driver.subsistema} - {driver.subDrivers ? `${driver.subDrivers.length} JOBS` : "1 JOB"}</p>
+                              
+                              <div className="mt-3 flex gap-3">
+                                {driver.puertoLocal && driver.puertoLocal !== '----' && (
+                                  <div className="bg-black/20 border-2 border-black/40 rounded-lg px-4 py-2">
+                                    <div className="text-xs font-bold uppercase tracking-wider mb-1">Puerto Local</div>
+                                    <div className="text-3xl font-bold font-mono">{driver.puertoLocal}</div>
+                                  </div>
+                                )}
+                                {driver.puertoRemoto && driver.puertoRemoto !== '----' && (
+                                  <div className="bg-black/20 border-2 border-black/40 rounded-lg px-4 py-2">
+                                    <div className="text-xs font-bold uppercase tracking-wider mb-1">Puerto Remoto</div>
+                                    <div className="text-3xl font-bold font-mono">{driver.puertoRemoto}</div>
+                                  </div>
+                                )}
+                                {driver.ip && (
+                                  <div className="bg-black/20 border-2 border-black/40 rounded-lg px-4 py-2 flex-1">
+                                    <div className="text-xs font-bold uppercase tracking-wider mb-1">IP Address</div>
+                                    <div className="text-sm font-bold font-mono leading-tight">{driver.ip}</div>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                           <button 
                             onClick={() => setExpandedDriver(null)}
-                            className="p-1 rounded-full hover:bg-opacity-20 hover:bg-black transition-colors"
+                            className="p-1 rounded-full hover:bg-black/20 transition-colors ml-2"
                           >
                             <X className="h-5 w-5" />
                           </button>
@@ -715,25 +537,25 @@ const SystemManagement = () => {
                         
                         <div className="p-4">
                           <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
+                            <table className="min-w-full">
                               <thead>
-                                <tr>
-                                  <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trabajos</th>
-                                  <th className="px-3 py-2 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subsistema</th>
+                                <tr className="border-b-2 border-green-500">
+                                  <th className="px-3 py-2 text-left text-xs font-bold text-green-400 uppercase tracking-wider font-mono">TRABAJOS</th>
+                                  <th className="px-3 py-2 text-left text-xs font-bold text-green-400 uppercase tracking-wider font-mono">SUBSISTEMA</th>
                                 </tr>
                               </thead>
-                              <tbody className="bg-white divide-y divide-gray-200">
+                              <tbody className="divide-y divide-green-900">
                                 {driver.subDrivers ? (
                                   driver.subDrivers.map((subDriver, index) => (
-                                    <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                      <td className="px-3 py-2 text-sm text-gray-900 font-mono">{subDriver.trabajos}</td>
-                                      <td className="px-3 py-2 text-sm text-gray-600">{driver.subsistema}</td>
+                                    <tr key={index} className="hover:bg-green-900/30">
+                                      <td className="px-3 py-2 text-sm text-green-400 font-mono font-bold">&gt; {subDriver.trabajos}</td>
+                                      <td className="px-3 py-2 text-sm text-green-500 font-mono">{driver.subsistema}</td>
                                     </tr>
                                   ))
                                 ) : (
-                                  <tr>
-                                    <td className="px-3 py-2 text-sm text-gray-900 font-mono">{driver.trabajos}</td>
-                                    <td className="px-3 py-2 text-sm text-gray-600">{driver.subsistema}</td>
+                                  <tr className="hover:bg-green-900/30">
+                                    <td className="px-3 py-2 text-sm text-green-400 font-mono font-bold">&gt; {driver.trabajos}</td>
+                                    <td className="px-3 py-2 text-sm text-green-500 font-mono">{driver.subsistema}</td>
                                   </tr>
                                 )}
                               </tbody>
@@ -749,338 +571,242 @@ const SystemManagement = () => {
           </>
         )}
 
-        {/* Módulo de Transacciones */}
+        {/* Transactions Module - NUEVO */}
         {currentModule === 'transactions' && (
-          <>
-            {/* Controles de Transacciones */}
-            <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-              <div className="flex flex-col space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center flex-1">
-                    <Search className="h-4 w-4 text-purple-400 mr-2" />
-                    <span className="font-medium text-sm mr-3">Búsqueda:</span>
-                    <input
-                      type="text"
-                      placeholder="Buscar por entidad, marca o KPI..."
-                      className="flex-1 max-w-md px-3 py-2 text-sm border border-purple-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      value={transactionSearchTerm}
-                      onChange={(e) => setTransactionSearchTerm(e.target.value)}
-                    />
-                    <button 
-                      onClick={() => setTransactionSearchTerm('')}
-                      className="ml-2 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
-                    >
-                      Limpiar
-                    </button>
-                  </div>
-                  
-                  {/* Toggle de vista */}
-                  <div className="flex items-center ml-4">
-                    <span className="text-sm font-medium mr-2">Vista:</span>
-                    <button
-                      onClick={() => setViewMode('table')}
-                      className={`px-3 py-1 text-xs rounded-l-md border ${
-                        viewMode === 'table' 
-                          ? 'bg-purple-600 text-white border-purple-600' 
-                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      📋 Tabla Completa
-                    </button>
-                    <button
-                      onClick={() => setViewMode('compact')}
-                      className={`px-3 py-1 text-xs rounded-r-md border ${
-                        viewMode === 'compact' 
-                          ? 'bg-purple-600 text-white border-purple-600' 
-                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      ⚡ Vista Compacta
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium text-sm">Filtros rápidos:</span>
-                  {[
-                    { key: 'all', label: 'Todas' },
-                    { key: 'propias', label: 'Propias' },
-                    { key: 'ajenas', label: 'Ajenas' },
-                    { key: 'pos', label: 'POS' },
-                    { key: 'atm', label: 'ATM' },
-                    { key: 'internet', label: 'Internet' }
-                  ].map(filter => (
-                    <button
-                      key={filter.key}
-                      onClick={() => setCurrentFilter(filter.key)}
-                      className={`px-3 py-1 text-xs rounded-full border transition-all ${
-                        currentFilter === filter.key
-                          ? 'bg-purple-600 text-white border-purple-600'
-                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      {filter.label}
-                    </button>
-                  ))}
-                </div>
-                
-                {(transactionSearchTerm || filteredTransactions.length < transactions.length) && (
-                  <div className="text-sm text-gray-600 italic">
-                    {transactionSearchTerm 
-                      ? `${filteredTransactions.length} resultado(s) para "${transactionSearchTerm}"`
-                      : `${filteredTransactions.length} transacciones mostradas`}
-                  </div>
-                )}
+          <div style={{
+            backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 255, 255, 0.03) 2px, rgba(0, 255, 255, 0.03) 4px)',
+            textShadow: '0 0 5px rgba(0, 255, 255, 0.5)'
+          }}>
+            {/* Search Panel */}
+            <div className="border-2 border-cyan-400 p-3 mb-3 glow-cyan bg-black">
+              <div className="grid grid-cols-3 md:grid-cols-9 gap-2 mb-3">
+                {[
+                  { value: 'all', label: 'TODO', color: 'green', size: 'md' },
+                  { value: 'name', label: 'ENTIDAD', color: 'cyan', size: 'lg' },
+                  { value: 'red', label: 'RED', color: 'magenta', size: 'lg' },
+                  { value: 'subred', label: 'SUBRED', color: 'yellow', size: 'lg' },
+                  { value: 'marca', label: 'MARCA', color: 'green', size: 'lg' },
+                  { value: 'tipoVia', label: 'TIPO_VÍA', color: 'cyan', size: 'lg' },
+                  { value: 'centroResolutor', label: 'CENTRO_RES', color: 'magenta', size: 'lg' },
+                  { value: 'thinkserver', label: 'KPI', color: 'yellow', size: 'xs' },
+                  { value: 'descripcion', label: 'DESC', color: 'green', size: 'xs' }
+                ].map(field => (
+                  <button
+                    key={field.value}
+                    onClick={() => setSearchField(field.value)}
+                    className={`border-2 px-2 py-2 transition-all ${
+                      field.size === 'lg' ? 'text-lg font-bold' : field.size === 'md' ? 'text-base font-bold' : 'text-xs'
+                    } ${
+                      searchField === field.value 
+                        ? `border-${field.color}-400 bg-${field.color}-950 bg-opacity-40 text-${field.color}-400 font-bold`
+                        : 'border-gray-700 text-gray-500'
+                    }`}
+                  >
+                    {field.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 border-2 border-cyan-400 p-3 bg-black">
+                <span className="text-cyan-400 text-xl">&gt;</span>
+                <input
+                  type="text"
+                  placeholder="BUSCAR..."
+                  value={transactionSearchTerm}
+                  onChange={(e) => setTransactionSearchTerm(e.target.value)}
+                  className="flex-1 bg-transparent outline-none text-cyan-400 placeholder-cyan-900 text-xl"
+                />
+                <Zap size={24} className="text-yellow-400 animate-pulse" />
               </div>
             </div>
 
-            {/* Vista de Tabla o Compacta */}
-            {filteredTransactions.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                <div className="inline-flex justify-center items-center w-12 h-12 bg-purple-100 rounded-full mb-4">
-                  <Search className="h-6 w-6 text-purple-600" />
-                </div>
-                <h3 className="text-gray-900 font-medium">No se encontraron resultados</h3>
-                <p className="text-gray-500 mt-1">Intenta con otros términos de búsqueda o cambia los filtros activos.</p>
-              </div>
-            ) : viewMode === 'compact' ? (
-              /* Vista Tabular Compacta con Columnas Visibles */
-              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                  {/* Header con nombres de columnas destacado */}
-                  <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-3 border-b-4 border-purple-700">
-                    <div className="grid grid-cols-7 gap-2 text-center font-bold text-sm">
-                      <div>🏢 ENTIDAD</div>
-                      <div>🔗 RED</div>
-                      <div>📍 SUBRED</div>
-                      <div>🏷️ ENTIDAD</div>
-                      <div>🎯 MARCA</div>
-                      <div>⚙️ CENTRO RESOLUTOR</div>
-                      <div>📊 KPIs + DESCRIPCIÓN</div>
+            {/* Entity Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 mb-3">
+              {filteredEntities.map((entity, idx) => {
+                const totalKpis = entity.instances.reduce((sum, inst) => sum + getKpisArray(inst.thinkserver).length, 0);
+                const colors = ['green', 'cyan', 'magenta', 'yellow'];
+                const color = colors[idx % colors.length];
+
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedEntity(idx)}
+                    className={`border-2 p-3 text-left transition-all ${
+                      color === 'green' ? 'border-green-400' :
+                      color === 'cyan' ? 'border-cyan-400' :
+                      color === 'magenta' ? 'border-magenta-400' :
+                      'border-yellow-400'
+                    } glow-${color} bg-black hover:bg-${color}-950 hover:bg-opacity-20 relative`}
+                  >
+                    <div className={`absolute top-2 right-2 w-3 h-3 rounded-full blink ${
+                      color === 'green' ? 'bg-green-400' :
+                      color === 'cyan' ? 'bg-cyan-400' :
+                      color === 'magenta' ? 'bg-magenta-400' :
+                      'bg-yellow-400'
+                    }`}></div>
+
+                    <div className={`text-xs mb-1 ${
+                      color === 'green' ? 'text-green-600' :
+                      color === 'cyan' ? 'text-cyan-600' :
+                      color === 'magenta' ? 'text-magenta-600' :
+                      'text-yellow-600'
+                    }`}>[{String(idx + 1).padStart(2, '0')}]</div>
+
+                    <div className={`text-xl font-bold leading-tight mb-2 ${
+                      color === 'green' ? 'text-green-400' :
+                      color === 'cyan' ? 'text-cyan-400' :
+                      color === 'magenta' ? 'text-magenta-400' :
+                      'text-yellow-400'
+                    }`}>
+                      {entity.name}
                     </div>
-                  </div>
 
-                  {/* Filas compactas con datos */}
-                  <div className="divide-y divide-gray-100">
-                    {filteredTransactions.map((transaction, index) => {
-                      const isPropia = transaction.red === 'PROPIAS';
-                      const isAjena = transaction.red === 'AJENA';
-                      
-                      return (
-                        <div 
-                          key={transaction.id} 
-                          className={`grid grid-cols-7 gap-2 p-3 hover:bg-gray-50 transition-colors ${
-                            isPropia ? 'bg-green-25' : isAjena ? 'bg-yellow-25' : ''
-                          } ${
-                            transaction.type.includes('pos') ? 'border-l-4 border-green-500' :
-                            transaction.type.includes('internet') ? 'border-l-4 border-purple-500' :
-                            transaction.type.includes('sms') ? 'border-l-4 border-teal-500' : 
-                            transaction.type.includes('atm') ? 'border-l-4 border-blue-500' : 'border-l-4 border-gray-300'
-                          }`}
-                        >
-                          {/* ENTIDAD (Sistema) */}
-                          <div className="flex items-center text-sm">
-                            <div className={`w-8 h-8 rounded-full mr-2 flex items-center justify-center text-white ${getSystemColorClasses(transaction.color).replace('bg-', 'bg-').replace('-100', '-500').replace('border-', '').replace('text-', '')}`}>
-                              {getSystemIcon(transaction.entidadSistema)}
-                            </div>
-                            <div>
-                              <div className="font-bold text-gray-900 text-xs leading-tight">
-                                {transaction.entidadSistema}
-                              </div>
-                              <div className="text-xs text-gray-500">ID: {transaction.id}</div>
-                            </div>
-                          </div>
+                    <div className="flex gap-3 text-sm">
+                      <div>
+                        <span className="text-gray-600">INST:</span>
+                        <span className="text-green-300 ml-1 font-bold text-base">{entity.instances.length}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-600">KPI:</span>
+                        <span className={`ml-1 font-bold text-base ${totalKpis > 0 ? 'text-yellow-300' : 'text-gray-700'}`}>{totalKpis}</span>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
 
-                          {/* RED */}
-                          <div className="flex items-center justify-center">
-                            {transaction.red ? (
-                              <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                                isPropia ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                              }`}>
-                                {isPropia ? '✓ PROPIAS' : '↗ AJENA'}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400 text-xs">-</span>
-                            )}
-                          </div>
-
-                          {/* SUBRED */}
-                          <div className="flex items-center justify-center">
-                            {transaction.subred ? (
-                              <span className={`px-2 py-1 rounded-md text-xs font-semibold ${
-                                transaction.subred.includes('POS') ? 'bg-green-100 text-green-800' :
-                                transaction.subred.includes('ATM') ? 'bg-blue-100 text-blue-800' :
-                                transaction.subred.includes('INTERNET') ? 'bg-purple-100 text-purple-800' :
-                                transaction.subred.includes('SMS') ? 'bg-teal-100 text-teal-800' :
-                                transaction.subred.includes('BANCO') ? 'bg-orange-100 text-orange-800' :
-                                'bg-gray-100 text-gray-800'
-                              }`}>
-                                {transaction.subred}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400 text-xs">-</span>
-                            )}
-                          </div>
-
-                          {/* ENTIDAD (Tipo) */}
-                          <div className="flex items-center justify-center">
-                            {transaction.entidadTipo ? (
-                              <span className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded text-xs font-bold">
-                                {transaction.entidadTipo}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400 text-xs">-</span>
-                            )}
-                          </div>
-
-                          {/* MARCA */}
-                          <div className="flex items-center justify-center">
-                            {transaction.marca && transaction.marca !== '-' ? (
-                              <span className="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-bold">
-                                {transaction.marca}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400 text-xs">-</span>
-                            )}
-                          </div>
-
-                          {/* CENTRO RESOLUTOR */}
-                          <div className="flex items-center text-xs">
-                            {transaction.centroResolutor ? (
-                              <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded text-xs font-medium truncate">
-                                {transaction.centroResolutor}
-                              </span>
-                            ) : (
-                              <span className="text-gray-400 text-xs">-</span>
-                            )}
-                          </div>
-
-                          {/* KPIs + DESCRIPCIÓN */}
-                          <div className="space-y-2">
-                            {/* KPIs compactos */}
-                            <div>
-                              <div className="text-xs font-semibold text-purple-700 mb-1">
-                                📊 {transaction.kpis.length} KPI{transaction.kpis.length !== 1 ? 's' : ''}:
-                              </div>
-                              <div className="space-y-1 max-h-20 overflow-y-auto">
-                                {transaction.kpis.map((kpi, kpiIndex) => (
-                                  <div key={kpiIndex} className="bg-purple-50 border-l-2 border-purple-400 px-2 py-1 text-xs rounded">
-                                    {kpi}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                            
-                            {/* Descripción */}
-                            <div className="pt-2 border-t border-gray-200">
-                              <div className="text-xs font-semibold text-gray-700 mb-1">📝 Descripción:</div>
-                              <p className="text-xs text-gray-600 leading-relaxed">
-                                {transaction.descripcion}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              /* Vista de Tabla */
-              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-800">
-                      <tr>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">ENTIDAD</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">RED</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">SUBRED</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">ENTIDAD</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">MARCA</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">CENTRO RESOLUTOR</th>
-                        <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">DESCRIPCIÓN</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {filteredTransactions.map((transaction, index) => {
-                        const isPropia = transaction.red === 'PROPIAS';
-                        const isAjena = transaction.red === 'AJENA';
-                        
-                        return (
-                          <tr 
-                            key={transaction.id} 
-                            className={`${
-                              isPropia ? 'bg-green-50' : isAjena ? 'bg-yellow-50' : 'bg-white'
-                            } ${
-                              transaction.type.includes('pos') ? 'border-l-4 border-green-500' :
-                              transaction.type.includes('internet') ? 'border-l-4 border-purple-500' :
-                              transaction.type.includes('sms') ? 'border-l-4 border-teal-500' : 
-                              transaction.type.includes('atm') ? 'border-l-4 border-blue-500' : ''
-                            }`}
-                          >
-                            <td className="px-4 py-3 text-sm">
-                              <div className="font-bold text-gray-900">{transaction.entidadSistema}</div>
-                            </td>
-                            <td className="px-4 py-3 text-sm">
-                              {transaction.red && (
-                                <span className={`inline-block px-2 py-1 text-xs font-bold rounded ${
-                                  isPropia ? 'bg-green-200 text-green-800' : 'bg-yellow-200 text-yellow-800'
-                                }`}>
-                                  {transaction.red}
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3 text-sm">
-                              <span className={`${
-                                ['POS', 'INTERNET', 'ATM'].some(canal => transaction.subred && transaction.subred.includes(canal)) ? 'font-bold' : ''
-                              }`}>
-                                {transaction.subred}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3 text-sm">
-                              {transaction.entidadTipo && (
-                                <span className="inline-block px-2 py-1 text-xs font-bold text-white bg-blue-600 rounded">
-                                  {transaction.entidadTipo}
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3 text-sm">
-                              {transaction.marca && transaction.marca !== '-' && (
-                                <span className="inline-block px-2 py-1 text-xs font-bold text-white bg-gray-600 rounded">
-                                  {transaction.marca}
-                                </span>
-                              )}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-900">{transaction.centroResolutor}</td>
-                            <td className="px-4 py-3 text-sm text-gray-900 max-w-xs">
-                              <div className="mb-2">
-                                <div className="text-xs font-semibold text-gray-700 mb-1">
-                                  KPIs ({transaction.kpis.length}):
-                                </div>
-                                <div className="space-y-1 max-h-32 overflow-y-auto">
-                                  {transaction.kpis.map((kpi, kpiIndex) => (
-                                    <div key={kpiIndex} className="bg-gray-100 px-2 py-1 rounded text-xs border-l-2 border-gray-400">
-                                      {kpi}
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                              <div className="pt-2 border-t border-gray-200">
-                                <div className="text-xs font-semibold text-gray-700 mb-1">Descripción:</div>
-                                <div className="text-sm">{transaction.descripcion}</div>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+            {filteredEntities.length === 0 && (
+              <div className="border-2 border-red-500 p-4 text-center bg-black">
+                <AlertTriangle className="mx-auto mb-2 animate-pulse text-red-500" size={32} />
+                <div className="text-sm text-red-400">[ERROR: SIN_RESULTADOS]</div>
               </div>
             )}
-          </>
+
+            {/* Footer */}
+            <div className="border-2 border-cyan-400 p-2 text-sm glow-cyan bg-black">
+              <div className="flex items-center justify-between">
+                <div className="text-cyan-400">
+                  <span className="text-yellow-400 blink text-lg">█</span> ONLINE | VIS: <span className="text-cyan-400 font-bold text-base">{filteredEntities.length}/{entities.length}</span>
+                </div>
+                <div className="text-cyan-600 font-bold">ROOT_ACCESS</div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
+
+      {/* Modal Transacciones */}
+      {selectedEntityData && (
+        <div className="fixed inset-0 bg-black bg-opacity-95 flex items-center justify-center p-2 z-50" onClick={() => setSelectedEntity(null)}>
+          <div className="w-full max-w-6xl max-h-[98vh] overflow-y-auto border-4 border-cyan-400 glow-cyan bg-black p-3" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-2 border-b border-cyan-400 pb-2">
+              <div className="flex-1">
+                <div className="text-[10px] text-cyan-600">[DETALLES]</div>
+                <h2 className="text-xl font-bold text-cyan-400">{selectedEntityData.name}</h2>
+              </div>
+              <button onClick={() => setSelectedEntity(null)} className="border border-red-500 p-1">
+                <X className="text-red-500" size={20} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
+              {selectedEntityData.instances.map((inst, instIdx) => {
+                const kpis = getKpisArray(inst.thinkserver);
+                
+                return (
+                  <div key={instIdx} className="border border-green-400 p-2 bg-black">
+                    <div className="flex items-center justify-between mb-2 pb-1 border-b border-green-700">
+                      <span className="text-[10px] text-green-600">CONFIG_{instIdx + 1}</span>
+                      {inst.tipo && (
+                        <span className={`px-2 py-0.5 border text-[10px] font-bold ${
+                          inst.tipo === 'EMISIÓN' ? 'border-cyan-400 text-cyan-400' :
+                          inst.tipo === 'ADQUIRENCIA' ? 'border-magenta-400 text-magenta-400' :
+                          'border-yellow-400 text-yellow-400'
+                        }`}>
+                          {inst.tipo === 'EMISIÓN' && <Upload className="inline" size={10} />}
+                          {inst.tipo === 'ADQUIRENCIA' && <Download className="inline" size={10} />}
+                          {inst.tipo}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      {inst.red && (
+                        <div className="border-2 border-magenta-700 p-2 bg-magenta-950 bg-opacity-20">
+                          <div className="text-magenta-600 text-lg font-bold mb-1">RED</div>
+                          <div className="text-magenta-400 font-bold text-xl">{inst.red}</div>
+                        </div>
+                      )}
+                      {inst.subred && (
+                        <div className="border-2 border-yellow-700 p-2 bg-yellow-950 bg-opacity-20">
+                          <div className="text-yellow-600 text-lg font-bold mb-1">SUBRED</div>
+                          <div className="text-yellow-400 font-bold text-xl">{inst.subred}</div>
+                        </div>
+                      )}
+                      {inst.entidad && (
+                        <div className="border-2 border-cyan-700 p-2 bg-cyan-950 bg-opacity-20">
+                          <div className="text-cyan-600 text-lg font-bold mb-1">ENTIDAD</div>
+                          <div className="text-cyan-400 font-bold text-xl">{inst.entidad}</div>
+                        </div>
+                      )}
+                      {inst.marca && inst.marca !== '-' && (
+                        <div className="border-2 border-green-700 p-2 bg-green-950 bg-opacity-20">
+                          <div className="text-green-600 text-lg font-bold mb-1">MARCA</div>
+                          <div className="text-green-400 font-bold text-xl">{inst.marca}</div>
+                        </div>
+                      )}
+                      {inst.tipoVia && (
+                        <div className="border-2 border-cyan-700 p-2 bg-cyan-950 bg-opacity-20">
+                          <div className="text-cyan-600 text-lg font-bold mb-1">TIPO DE VÍA</div>
+                          <div className="text-cyan-400 font-bold text-xl">{inst.tipoVia}</div>
+                        </div>
+                      )}
+                      {inst.centroResolutor && (
+                        <div className="border-2 border-magenta-700 p-2 bg-magenta-950 bg-opacity-20">
+                          <div className="text-magenta-600 text-lg font-bold mb-1">CENTRO RESOLUTOR</div>
+                          <div className="text-magenta-400 font-bold text-lg">{inst.centroResolutor}</div>
+                        </div>
+                      )}
+                    </div>
+
+                    {kpis.length > 0 && (
+                      <div className="border border-yellow-400 p-1 bg-yellow-950 bg-opacity-20 mb-2">
+                        <div className="flex items-center gap-1 mb-1">
+                          <AlertTriangle size={10} className="text-yellow-400" />
+                          <span className="text-[10px] font-bold text-yellow-400">KPI [{kpis.length}]</span>
+                        </div>
+                        <div className="space-y-0.5">
+                          {kpis.map((kpi, kpiIdx) => (
+                            <div key={kpiIdx} className="text-[9px] text-yellow-300 flex gap-1">
+                              <span className="text-yellow-600">▸</span>
+                              <span className="flex-1">{kpi}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="border border-green-700 p-1 bg-green-950 bg-opacity-20">
+                      <div className="text-[9px] text-green-600 mb-0.5">DESC:</div>
+                      <div className="text-[10px] text-green-300 leading-tight">{inst.descripcion}</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-2 pt-2 border-t border-cyan-400 text-center">
+              <button
+                onClick={() => setSelectedEntity(null)}
+                className="border border-cyan-400 px-4 py-1 text-cyan-400 text-xs font-bold hover:bg-cyan-950 hover:bg-opacity-30"
+              >
+                [CERRAR]
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
